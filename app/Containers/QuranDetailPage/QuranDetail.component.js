@@ -25,7 +25,7 @@ import { keyExtractor } from '../../Utils/Helper';
 import { FontType } from '../../Themes/Fonts';
 import { Colors } from '../../Themes/Colors';
 import { RbSheetStyle } from '../../Themes/Styles';
-
+import Reactotron from 'reactotron-react-native'
 function QuranDetail(props) {
   const refRBSheet = useRef();
   const [rbSheetData, setRbSheetData] = useState({});
@@ -124,10 +124,11 @@ function QuranDetail(props) {
     }
   };
 
-  const renderCardContent = ({ item }) => {
+  const renderCardContent = ({ item,index }) => {
     return (
       <CardAyatList
-        ayatNumber={item?.number}
+        ayatNumber={index+1}
+        //ayatNumber={item?.number}
         ayatText={item?.text}
         //ayatTranslate={item?.translation_aya_text}
         onPress={openBottomSheet(item)}
@@ -177,10 +178,10 @@ function QuranDetail(props) {
   const renderData = () => {
     const { dataAyat, refreshing } = props;
     const ayaat = dataAyat.ayahs
-    console.log('ayyat',ayaat);
+    Reactotron.log('Ayyats:',dataAyat.ayahs)
     return (
       <FlatList
-        data={ayaat}
+        data={dataAyat.ayahs}
         keyExtractor={keyExtractor}
         renderItem={renderCardContent}
         refreshing={refreshing}
