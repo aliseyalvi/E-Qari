@@ -5,14 +5,15 @@ import { TouchableRipple } from 'react-native-paper';
 
 import { Styles } from './CardAyatList.style';
 import { Colors } from '../../Themes/Colors';
-
+import Reactotron from 'reactotron-react-native'
 const CardAyatList = props => {
-  const { ayatNumber, ayatText, ayatTranslate, onPress } = props;
+  const { ayatNumber, ayatText, ayatTranslate, onPress,ayahData } = props;
+  Reactotron.log('ayahData',ayahData)
   return (
     <TouchableRipple
       rippleColor={Colors.rippleColor}
       centered
-      onPress={onPress}>
+      onPress={()=>onPress(ayahData)}>
       <View style={Styles.CardStyle}>
         <View style={Styles.cardContainer}>
           <View style={Styles.numberCircleContainer}>

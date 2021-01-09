@@ -26,10 +26,12 @@ import { FontType } from '../../Themes/Fonts';
 import { Colors } from '../../Themes/Colors';
 import { RbSheetStyle } from '../../Themes/Styles';
 import Reactotron from 'reactotron-react-native'
+import {AyahPlayer} from '../../Components/AyahPlayer/AyahPlayer.component'
 function QuranDetail(props) {
   const refRBSheet = useRef();
   const [rbSheetData, setRbSheetData] = useState({});
 
+  
   useEffect(() => {
     renderDetailSurah();
   }, []);
@@ -131,7 +133,9 @@ function QuranDetail(props) {
         //ayatNumber={item?.number}
         ayatText={item?.text}
         //ayatTranslate={item?.translation_aya_text}
-        onPress={openBottomSheet(item)}
+        //onPress={openBottomSheet(item)}
+        ayahData = {item}
+        onPress = {openAyahPlayerModal}
       />
     );
   };
@@ -193,11 +197,29 @@ function QuranDetail(props) {
     );
   };
 
+  const ayahPlayerModalizeRef = useRef(null);
+  const [selectedAyah,setSelectedAyah] = useState(null)
+  const openAyahPlayerModal = (ayahData) => {
+    Reactotron.log('openAyahPlayerModal', ayahData)
+    setSelectedAyah(ayahData)
+    ayahPlayerModalizeRef.current?.open();
+  }
+  const renderAyahPlayerModal = () => {
+    return(
+      <AyahPlayer
+        forwardRef = {ayahPlayerModalizeRef}
+        ayahData = {selectedAyah}
+      />
+    )
+  }
+
   return props.isLoading ? (
     <Loading />
   ) : (
     <Fragment>
       {renderData()}
+      
+      {renderAyahPlayerModal()}
       {renderBottomSheet()}
     </Fragment>
   );
