@@ -16,21 +16,17 @@ import {
 import { Modalize } from 'react-native-modalize';
 import { Colors } from '../../Themes/Colors';
 import { FontType } from '../../Themes/Fonts';
-//import TrackPlayer from 'react-native-track-player';
 import Icon from 'react-native-vector-icons/FontAwesome';
 
-import {
-    Player,
-    Recorder,
-    MediaStates,
-} from '@react-native-community/audio-toolkit';
-
+// import Sound Component
+import Sound from 'react-native-sound';
 import Reactotron from 'reactotron-react-native'
+
 const HEIGHT = Dimensions.get('window').height
-var player;
-var recorder;
-//const filename = 'https://cdn.alquran.cloud/media/audio/ayah/ar.alafasy/1';
-const filename = 'test.mp3'
+//sound instant variable
+var sound1
+
+
 const AyahPlayer = (props) => {
     const {
         forwardRef,
@@ -38,246 +34,41 @@ const AyahPlayer = (props) => {
     } = props
     Reactotron.log('ayah data in player modal ', ayahData)
     
-    const [playPauseButton, setPlayPauseButton] = useState('')
-    const [recordButton, setRecordButton] = useState('')
-    const [stopButtonDisabled, setStopButtonDisabled] = useState(true)
-    const [playButtonDisabled, setPlayButtonDisabled] = useState(true)
-    const [recordButtonDisabled, setRecordButtonDisabled] = useState(true)
-    const [loopButtonStatus, setLoopButtonStatus] = useState(false)
-    const [error, setError] = useState(null)
-
-
-
-
-    const _reloadPlayer = () => {
-        if (player) {
-            player.destroy();
-        }
-        
-        player = new Player(ayahData? ayahData.audio : '', {
-            autoDestroy: false
-        }).prepare((err) => {
-            if (err) {
-                console.log('error at _reloadPlayer():');
-                console.log(err);
-            } else {
-                player.looping = loopButtonStatus
-            }
-
-            _updateState();
-        });
-        //console.log('inside reload player',player)
-        _updateState();
-
-        player.on('ended', () => {
-            _updateState();
-        });
-        player.on('pause', () => {
-            _updateState();
-        });
-    }
-
-    const _reloadRecorder = () => {
-        if (recorder) {
-            recorder.destroy();
-        }
-
-        recorder = new Recorder(filename, {
-            bitrate: 256000,
-            channels: 2,
-            sampleRate: 44100,
-            quality: 'max'
-        }).prepare((err,fsPath)=>{
-            console.log('fspath:',fsPath);
-        });
-
-        _updateState();
-    }
-
-    const _toggleRecord = () => {
-        if (player) {
-            player.destroy();
-        }
-
-        let recordAudioRequest;
-        if (Platform.OS == 'android') {
-            recordAudioRequest = _requestRecordAudioPermission();
-        } else {
-            recordAudioRequest = new Promise(function (resolve, reject) { resolve(true); });
-        }
-
-        recordAudioRequest.then((hasPermission) => {
-            if (!hasPermission) {
-                setError('Record Audio Permission was denied')
-
-                return;
-            }
-            
-            recorder.toggleRecord((err, stopped,) => {
-                if (err) {
-                    setError(err.message)
-
-                }
-                if (stopped) {
-                    //console.log('inside toggle record');
-                    _reloadPlayer();
-                    _reloadRecorder();
+    const [isPlaying, setIsPlaying] = useState(false)
+    const playAyah = () => {
+        sound1 = new Sound(ayahData ? ayahData.audio : '', Sound.MAIN_BUNDLE,
+            (error, sound) => {
+                if (error) {
+                    alert('error' + error.message);
+                    return;
                 }
 
-                _updateState();
-            });
-        });
-    }
-    const _startRecord = () => {
-        if (player) {
-            player.destroy();
-        }
-        recorder.record((err)=>{
-            setError(err)
-        })
-        _updateState();
-    }
-    const _stopRecord = () => {
-        if (player) {
-            player.destroy();
-        }
-        recorder.stop((err)=>{
-            setError(err)
-        })
-        _reloadPlayer();
-        _reloadRecorder();
-        _updateState();
-    }
-
-    const _requestRecordAudioPermission = async () => {
-        try {
-            const granted = await PermissionsAndroid.request(
-                PermissionsAndroid.PERMISSIONS.RECORD_AUDIO,
-                {
-                    title: 'Microphone Permission',
-                    message: 'ExampleApp needs access to your microphone to test react-native-audio-toolkit.',
-                    buttonNeutral: 'Ask Me Later',
-                    buttonNegative: 'Cancel',
-                    buttonPositive: 'OK',
-                },
-            );
-            if (granted === PermissionsAndroid.RESULTS.GRANTED) {
-                return true;
-            } else {
-                return false;
-            }
-        } catch (err) {
-            console.error(err);
-            return false;
-        }
-    }
-
-    const _toggleLooping = (value) => {
-        setLoopButtonStatus(value)
-
-        if (player) {
-            player.looping = value;
-        }
-    }
-
-    const _playPause = () => {
-        console.log('inside playpause',player)
-        if(player){
-            console.log('inside if',player)
-            player.playPause((err, paused) => {
-                if (err) {
-                    setError(err.message)
-    
-                }
-                _updateState();
-            })
-        }
-        
-    }
-
-    const _stop = () => {
-        player.stop(() => {
-            _updateState();
-        });
-    }
-
-    const _updateState = (err) => {
-        setPlayPauseButton(player && player.isPlaying ? 'pause' : 'play')
-        setRecordButton(recorder && recorder.isRecording ? 'Stop' : 'Record')
-        setStopButtonDisabled(!player || !player.canStop)
-        setPlayButtonDisabled(!player || !player.canPlay || recorder.isRecording)
-        setRecordButtonDisabled(!recorder || (player && !player.isStopped))
-
-    }
-
-    useEffect(()=>{
-        _reloadPlayer()
-        _reloadRecorder()
-    },[ayahData])
-
-    /*     //state to manage whether track player is initialized or not
-        const [isTrackPlayerInit, setIsTrackPlayerInit] = useState(false);
-        const [isPlaying, setIsPlaying] = useState(false);
-        //function to initialize the Track Player 
-        const trackPlayerInit = async () => {
-            await TrackPlayer.setupPlayer();
-            await TrackPlayer.add({
-                id: '1',
-                url: 'https://cdn.alquran.cloud/media/audio/ayah/ar.alafasy/1',
-                //url:ayahData? ayahData.audio : '',
-                type: 'default',
-                title: 'My Title',
-                album: 'My Album',
-                artist: 'Rohan Bhatia',
-                artwork: 'https://picsum.photos/100',
-            });
-            return true;
-        };
-    
-    
-        //initialize the TrackPlayer when the App component is mounted
-        useEffect(() => {
-            const startPlayer = async () => {
-                let isInit = await trackPlayerInit();
-                setIsTrackPlayerInit(isInit);
-            }
-            startPlayer();
-        }, [ayahData]);
-    
-        //start playing the TrackPlayer when the button is pressed 
-        const onButtonPressed = () => {
-            if (!isPlaying) {
-                TrackPlayer.play();
-                setIsPlaying(true);
-              } else {
-                TrackPlayer.pause();
-                setIsPlaying(false);
-              }
-        }; */
-
-        const record =()=> {
-            // Disable button while recording and playing back
-           
-          
-            // Start recording
-            let rec = new Recorder("filename.mp4").record();
-          
-            // Stop recording after approximately 3 seconds
-            setTimeout(() => {
-              rec.stop((err) => {
-                // NOTE: In a real situation, handle possible errors here
-          
-                // Play the file after recording has stopped
-                new Player("filename.mp4")
-                .play()
-                .on('ended', () => {
-                  // Enable button again after playback finishes
-                  console.log('recording ended');
+                setIsPlaying(true)
+                console.log('duration in seconds: ' + sound1.getDuration() + 'number of channels: ' + sound1.getNumberOfChannels());
+                sound1.play((success) => {
+                    if (success) {
+                        console.log('successfully finished playing');
+                    } else {
+                        console.log('playback failed due to audio decoding errors');
+                    }
+                    setIsPlaying(false)
+                    sound1.release();
                 });
-              });
-            }, 5000);
-          }
+            });
+    }
 
+    const stopAyah = () => {
+        //console.log(sound1);
+        if (sound1) {
+            sound1.stop(() => {
+                setIsPlaying(false)
+                console.log('Stop');
+            });
+        } else {
+            console.log('no player running');
+        }
+
+    }
     const _renderModalHeader = () => {
         return (
             <View style={styles.forwardBackContainer}>
@@ -297,7 +88,7 @@ const AyahPlayer = (props) => {
     const _renderModalFooter = () => {
         return (
             <View style={styles.playRecordContainer}>
-                <TouchableOpacity style={styles.micButtonContainer}>
+                <TouchableOpacity style={styles.micButtonContainer} >
                     <Icon
                         name={"microphone"}
                         size={40}
@@ -305,14 +96,27 @@ const AyahPlayer = (props) => {
                         style={styles.micIcon}
                     />
                 </TouchableOpacity>
-                <TouchableOpacity style={styles.playButtonContainer} disabled={playButtonDisabled} onPress={() => _playPause()}>
-                    <Icon
-                        name={playPauseButton}
-                        size={32}
-                        color="#3D425C"
-                        style={styles.playIcon}
-                    />
-                </TouchableOpacity>
+                {
+                    isPlaying ?
+                        <TouchableOpacity style={styles.playButtonContainer} onPress={() => stopAyah()}>
+                            <Icon
+                                name={'pause'}
+                                size={32}
+                                color="#3D425C"
+                                style={styles.playIcon}
+                            />
+                        </TouchableOpacity>
+                        :
+                        <TouchableOpacity style={styles.playButtonContainer} onPress={() => playAyah()}>
+                            <Icon
+                                name={'play'}
+                                size={32}
+                                color="#3D425C"
+                                style={styles.playIcon}
+                            />
+                        </TouchableOpacity>
+                }
+
             </View>
         )
     }
@@ -323,76 +127,12 @@ const AyahPlayer = (props) => {
             modalStyle={{ padding: 12 }}
             HeaderComponent={_renderModalHeader}
             FooterComponent={_renderModalFooter}
+            onClose={stopAyah}
         >
 
-
             <View style={styles.coverContainer}>
-                
                 <Text style={styles.descTextRight}>{ayahData ? ayahData.text : ''}</Text>
-                 
-                {/** 
-                <View style={styles.settingsContainer}>
-                    <Switch
-                        onValueChange={(value) => _toggleLooping(value)}
-                        value={loopButtonStatus} />
-                    <Text>Toggle Looping</Text>
-                </View>
-                
-                
-                <View>
-                    <Text style={styles.title}>
-                        Recording
-                    </Text>
-                </View>
-                <View>
-                    
-                <TouchableOpacity disabled={recordButtonDisabled} onPress={() => _toggleRecord()}>
-                        <Text>
-                        {recordButton}
-                        </Text>
-                    </TouchableOpacity>
-                </View>
-                */}
-                {/** 
-                <View>
-                    
-                <TouchableOpacity disabled={recordButtonDisabled} onPress={() => _startRecord()}>
-                        <Text>
-                        start record
-                        </Text>
-                    </TouchableOpacity>
-                </View>
-                <View>
-                <TouchableOpacity disabled={recordButtonDisabled} onPress={() => _stopRecord()}>
-                        <Text>
-                        stop record
-                        </Text>
-                    </TouchableOpacity>
-                </View>
-                */}
-                <View>
-                    <Text style={styles.errorMessage}>{error}</Text>
-                </View>
             </View>
-            <View style={{}}>
-                {/** 
-                    <Slider
-                        minimumValue={0}
-                        maximumValue={this.state.trackLength}
-                        trackStyle={styles.track}
-                        thumbStyle={styles.thumb}
-                        minimumTrackTintColor="#93A8B3"
-                        onValueChange={seconds => this.changeTime(seconds)}
-                    ></Slider>
-                    
-                <View style={{ marginTop: -12, flexDirection: "row", justifyContent: "space-between" }}>
-                    <Text style={[styles.textLight, styles.timeStamp]}>{this.state.timeElapsed}</Text>
-                    <Text style={[styles.textLight, styles.timeStamp]}>{this.state.timeRemaining}</Text>
-                </View>
-                */}
-            </View>
-
-
 
         </Modalize>
 
@@ -502,7 +242,7 @@ const styles = StyleSheet.create({
         paddingTop: 10,
         paddingRight: 10,
         fontSize: 27,
-        fontFamily: FontType.arabic,
+        fontFamily: FontType.muhammadi,
         lineHeight: 70,
     },
     textNumber: {

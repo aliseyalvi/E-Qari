@@ -6,7 +6,10 @@ const FontType = {
   black: 'Roboto-Black',
   arabic: 'LPMQ',
   kitabBold:  'Kitab-Bold',
-  kitabRegular: 'Kitab-Regular'
+  kitabRegular: 'Kitab-Regular',
+  alQalamQuran: 'AlQalamQuran',
+  pdms: 'PDMS',
+  muhammadi: 'MUHAMMADIBold'
 };
 
 const FontWeight = {
