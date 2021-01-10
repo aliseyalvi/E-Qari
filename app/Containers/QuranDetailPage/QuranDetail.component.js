@@ -179,6 +179,7 @@ function QuranDetail(props) {
     );
   };
 
+  //render ayahs flatlist
   const renderData = () => {
     const { dataAyat, refreshing } = props;
     const ayaat = dataAyat.ayahs
@@ -192,11 +193,12 @@ function QuranDetail(props) {
         onRefresh={renderDetailSurah}
         ItemSeparatorComponent={Separator}
         showsVerticalScrollIndicator={false}
-        ListHeaderComponent={listHeaderComponent}
+        //ListHeaderComponent={listHeaderComponent}
       />
     );
   };
 
+  //Load modal ayah player modal component
   const ayahPlayerModalizeRef = useRef(null);
   const [selectedAyah,setSelectedAyah] = useState(null)
   const openAyahPlayerModal = (ayahData) => {

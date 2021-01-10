@@ -20,6 +20,9 @@ import Icon from 'react-native-vector-icons/FontAwesome';
 
 // import Sound Component
 import Sound from 'react-native-sound';
+//import sound recorder component
+import SoundRecorder from 'react-native-sound-recorder';
+//import reactotron
 import Reactotron from 'reactotron-react-native'
 
 const HEIGHT = Dimensions.get('window').height
@@ -33,11 +36,16 @@ const AyahPlayer = (props) => {
         ayahData
     } = props
     Reactotron.log('ayah data in player modal ', ayahData)
-    
+
+    const [recordFile, setRecordFile] = useState('')
     const [isPlaying, setIsPlaying] = useState(false)
+    const [isRecording, setIsRecording] = useState(false)
+
+    //load the player and play ayah
     const playAyah = () => {
         sound1 = new Sound(ayahData ? ayahData.audio : '', Sound.MAIN_BUNDLE,
             (error, sound) => {
+                console.log('started playing');
                 if (error) {
                     alert('error' + error.message);
                     return;
@@ -57,6 +65,7 @@ const AyahPlayer = (props) => {
             });
     }
 
+    // stop the player
     const stopAyah = () => {
         //console.log(sound1);
         if (sound1) {
@@ -69,6 +78,53 @@ const AyahPlayer = (props) => {
         }
 
     }
+
+    //load sound recorder and record sound
+    const recordAyah = () => {
+        SoundRecorder.start(SoundRecorder.PATH_CACHE + '/test.mp4')
+            .then(function () {
+                setIsRecording(true)
+                console.log('started recording');
+            });
+    }
+
+
+    //stop sound recorder
+    const stopRecordAyah = () => {
+        SoundRecorder.stop()
+            .then(function (result) {
+                setIsRecording(false)
+                //setRecordFile(result.path)
+                console.log('stopped recording, audio file saved at: ' + result.path);
+            });
+    }
+
+
+    //get audio record permission
+    const _requestRecordAudioPermission = async () => {
+        try {
+            const granted = await PermissionsAndroid.request(
+                PermissionsAndroid.PERMISSIONS.RECORD_AUDIO,
+                {
+                    title: 'Microphone Permission',
+                    message: 'EQari needs access to your microphone to record your voice',
+                    buttonNeutral: 'Ask Me Later',
+                    buttonNegative: 'Cancel',
+                    buttonPositive: 'OK',
+                },
+            );
+            if (granted === PermissionsAndroid.RESULTS.GRANTED) {
+                return true;
+            } else {
+                return false;
+            }
+        } catch (err) {
+            console.error(err);
+            return false;
+        }
+    }
+
+    //modal header component
     const _renderModalHeader = () => {
         return (
             <View style={styles.forwardBackContainer}>
@@ -85,20 +141,47 @@ const AyahPlayer = (props) => {
             </View>
         )
     }
+
+    //modal footer component
     const _renderModalFooter = () => {
         return (
             <View style={styles.playRecordContainer}>
-                <TouchableOpacity style={styles.micButtonContainer} >
-                    <Icon
-                        name={"microphone"}
-                        size={40}
-                        color="#3D425C"
-                        style={styles.micIcon}
-                    />
-                </TouchableOpacity>
+
+                {
+                    isRecording ?
+                        <TouchableOpacity
+                            style={{...styles.micButtonContainer,backgroundColor:'rgba(219 ,68 ,55,1)'}}
+                            onPress={() => stopRecordAyah()}
+                            disabled={isPlaying}
+                        >
+                            <Icon
+                                name={"stop"}
+                                size={40}
+                                color="#FFF"
+                                style={styles.micIcon}
+                            />
+                        </TouchableOpacity>
+                        :
+                        <TouchableOpacity
+                            style={styles.micButtonContainer}
+                            onPress={() => recordAyah()}
+                            disabled={isPlaying}
+                        >
+                            <Icon
+                                name={"microphone"}
+                                size={40}
+                                color="#FFF"
+                                style={styles.micIcon}
+                            />
+                        </TouchableOpacity>
+                }
                 {
                     isPlaying ?
-                        <TouchableOpacity style={styles.playButtonContainer} onPress={() => stopAyah()}>
+                        <TouchableOpacity
+                            style={styles.playButtonContainer}
+                            onPress={() => stopAyah()}
+                            disabled={isRecording}
+                        >
                             <Icon
                                 name={'pause'}
                                 size={32}
@@ -107,7 +190,11 @@ const AyahPlayer = (props) => {
                             />
                         </TouchableOpacity>
                         :
-                        <TouchableOpacity style={styles.playButtonContainer} onPress={() => playAyah()}>
+                        <TouchableOpacity
+                            style={styles.playButtonContainer}
+                            onPress={() => playAyah()}
+                            disabled={isRecording}
+                        >
                             <Icon
                                 name={'play'}
                                 size={32}
@@ -120,6 +207,8 @@ const AyahPlayer = (props) => {
             </View>
         )
     }
+
+    //return modalize component
     return (
         <Modalize
             ref={forwardRef}
@@ -133,6 +222,7 @@ const AyahPlayer = (props) => {
             <View style={styles.coverContainer}>
                 <Text style={styles.descTextRight}>{ayahData ? ayahData.text : ''}</Text>
             </View>
+          
 
         </Modalize>
 
@@ -206,32 +296,43 @@ const styles = StyleSheet.create({
         height: 150,
     },
     micButtonContainer: {
-        backgroundColor: "#FFF",
-        borderColor: "rgba(93, 63, 106, 0.2)",
-        borderWidth: 16,
-        width: 120,
-        height: 120,
-        borderRadius: 60,
+        //backgroundColor: "#FFF",
+        //borderColor: "rgba(93, 63, 106, 0.2)",
+        backgroundColor: "rgba(18, 140, 126,1)",
+        //borderWidth: 16,
+        width: 100,
+        height: 100,
+        borderRadius: 50,
         alignItems: "center",
         justifyContent: "center",
-        shadowColor: "#5D3F6A",
-        shadowRadius: 30,
-        shadowOpacity: 0.5,
         marginHorizontal: 8,
+        shadowColor: "#000",
+        shadowOffset: {
+            width: 0,
+            height: 1,
+        },
+        shadowOpacity: 0.22,
+        shadowRadius: 2.22,
+        elevation: 4,
     },
     playButtonContainer: {
         backgroundColor: "#FFF",
-        borderColor: "rgba(93, 63, 106, 0.2)",
-        borderWidth: 12,
-        width: 90,
-        height: 90,
-        borderRadius: 45,
+        //borderColor: "rgba(93, 63, 106, 0.2)",
+        //borderWidth: 12,
+        width: 80,
+        height: 80,
+        borderRadius: 40,
         alignItems: "center",
         justifyContent: "center",
-        shadowColor: "#5D3F6A",
-        shadowRadius: 30,
-        shadowOpacity: 0.5,
         marginHorizontal: 8,
+        shadowColor: "#000",
+        shadowOffset: {
+            width: 0,
+            height: 1,
+        },
+        shadowOpacity: 0.22,
+        shadowRadius: 2.22,
+        elevation: 4,
     },
     playIcon: {
         marginLeft: 8,
@@ -241,9 +342,10 @@ const styles = StyleSheet.create({
         textAlign: 'right',
         paddingTop: 10,
         paddingRight: 10,
-        fontSize: 27,
-        fontFamily: FontType.muhammadi,
+        fontSize: 30,
+        fontFamily: FontType.arabic,
         lineHeight: 70,
+        letterSpacing:15,
     },
     textNumber: {
         color: Colors.grey,

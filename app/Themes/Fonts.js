@@ -1,4 +1,6 @@
 const FontType = {
+  montserratRegular : 'Montserrat-Regular',
+  sourceSansPro: 'SourceSansPro-Black',
   light: 'Roboto-Thin',
   regular: 'Roboto-Regular',
   semiBold: 'Roboto-Medium',
@@ -7,7 +9,7 @@ const FontType = {
   arabic: 'LPMQ',
   kitabBold:  'Kitab-Bold',
   kitabRegular: 'Kitab-Regular',
-  alQalamQuran: 'AlQalamQuran',
+  alQalamQuran: 'alqalamquran',
   pdms: 'PDMS',
   muhammadi: 'MUHAMMADIBold'
 };
