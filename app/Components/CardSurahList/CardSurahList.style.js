@@ -64,10 +64,10 @@ const Styles = StyleSheet.create({
     fontFamily: FontType.regular,
   },
   descArab: {
-    fontSize: 19,
+    fontSize: 24,
     paddingTop: 5,
     paddingLeft: 5,
-    fontFamily: FontType.arabic,
+    fontFamily: FontType.alQalamQuran,
   },
   descSubTitleTranslate: {
     fontSize: 13,

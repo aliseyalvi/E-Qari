@@ -10,7 +10,7 @@ const Styles = StyleSheet.create({
     paddingVertical: 10,
     paddingRight: 10,
     fontSize: 30,
-    fontFamily: FontType.arabic,
+    fontFamily: FontType.alQalamQuran,
   },
 });
 

@@ -8,13 +8,13 @@ const AboutPage = () => {
   return (
     <View style={Styles.container}>
       <Image
-        source={require('../../Assets/Images/ic_icon.png')}
+        source={require('../../Assets/Images/eqari-image.png')}
         style={Styles.appImage}
         resizeMode="stretch"
       />
-      <Text style={Styles.appName}>Al-Quran Mobile</Text>
+      <Text style={Styles.appName}>E-Qari</Text>
       <Text style={Styles.appVersion}>Version 1.0</Text>
-      <Text style={Styles.appAuthor}>Ihsan Nurul Habib</Text>
+      <Text style={Styles.appAuthor}>Sadaqat Ali</Text>
     </View>
   );
 };

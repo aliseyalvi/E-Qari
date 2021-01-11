@@ -65,7 +65,7 @@ const Styles = StyleSheet.create({
         paddingTop: 10,
         paddingRight: 10,
         fontSize: 27,
-        fontFamily: FontType.arabic,
+        fontFamily: FontType.alQalamQuran,
         lineHeight: 70,
       },
 });

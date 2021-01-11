@@ -42,9 +42,10 @@ const Styles = StyleSheet.create({
     textAlign: 'right',
     paddingTop: 10,
     paddingRight: 10,
-    fontSize: 27,
-    fontFamily: FontType.arabic,
+    fontSize: 32,
+    fontFamily: FontType.alQalamQuran,
     lineHeight: 70,
+    letterSpacing:5,
   },
   descTextLeftContainer: {
     paddingVertical: 10,

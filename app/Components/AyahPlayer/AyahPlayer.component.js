@@ -99,6 +99,16 @@ const AyahPlayer = (props) => {
             });
     }
 
+    //cancel record 
+    const cancelRecord = () => {
+        SoundRecorder.stop()
+            .then(function (result) {
+                setIsRecording(false)
+                //setRecordFile(result.path)
+                console.log('Recording is cancelled');
+            });
+    }
+
 
     //get audio record permission
     const _requestRecordAudioPermission = async () => {
@@ -130,13 +140,13 @@ const AyahPlayer = (props) => {
             <View style={styles.forwardBackContainer}>
                 <TouchableOpacity>
 
-                    <Icon name={"backward"} size={32} color="#93A8B3" />
+                    <Icon name={"backward"} size={26} color="#93A8B3" />
                 </TouchableOpacity>
                 <View style={styles.NumberCircle}>
                     <Text style={styles.textNumber}>{ayahData ? ayahData.number : ''}</Text>
                 </View>
                 <TouchableOpacity>
-                    <Icon name="forward" size={32} color="#93A8B3" />
+                    <Icon name="forward" size={26} color="#93A8B3" />
                 </TouchableOpacity>
             </View>
         )
@@ -149,19 +159,35 @@ const AyahPlayer = (props) => {
 
                 {
                     isRecording ?
-                        <TouchableOpacity
-                            style={{...styles.micButtonContainer,backgroundColor:'rgba(219 ,68 ,55,1)'}}
-                            onPress={() => stopRecordAyah()}
-                            disabled={isPlaying}
+                        <View
+                            style={styles.stopCancelContainer}
                         >
-                            <Icon
-                                name={"stop"}
-                                size={40}
-                                color="#FFF"
-                                style={styles.micIcon}
-                            />
-                        </TouchableOpacity>
+                            <TouchableOpacity
+                                style={styles.cancelIcon}
+                                onPress={()=>cancelRecord()}
+                            >
+                                <Icon
+                                    name={"close"}
+                                    size={20}
+                                    color="#FFF"
+                                //style={styles.cancelIcon}
+                                />
+                            </TouchableOpacity>
+                            <TouchableOpacity
+                                style={{ ...styles.micButtonContainer, backgroundColor: 'rgba(219 ,68 ,55,1)' }}
+                                onPress={() => stopRecordAyah()}
+                                disabled={isPlaying}
+                            >
+                                <Icon
+                                    name={"stop"}
+                                    size={26}
+                                    color="#FFF"
+                                    style={styles.micIcon}
+                                />
+                            </TouchableOpacity>
+                        </View>
                         :
+
                         <TouchableOpacity
                             style={styles.micButtonContainer}
                             onPress={() => recordAyah()}
@@ -169,11 +195,12 @@ const AyahPlayer = (props) => {
                         >
                             <Icon
                                 name={"microphone"}
-                                size={40}
+                                size={30}
                                 color="#FFF"
                                 style={styles.micIcon}
                             />
                         </TouchableOpacity>
+
                 }
                 {
                     isPlaying ?
@@ -184,9 +211,9 @@ const AyahPlayer = (props) => {
                         >
                             <Icon
                                 name={'pause'}
-                                size={32}
+                                size={26}
                                 color="#3D425C"
-                                style={styles.playIcon}
+                                //style={styles.playIcon}
                             />
                         </TouchableOpacity>
                         :
@@ -197,7 +224,7 @@ const AyahPlayer = (props) => {
                         >
                             <Icon
                                 name={'play'}
-                                size={32}
+                                size={26}
                                 color="#3D425C"
                                 style={styles.playIcon}
                             />
@@ -222,7 +249,7 @@ const AyahPlayer = (props) => {
             <View style={styles.coverContainer}>
                 <Text style={styles.descTextRight}>{ayahData ? ayahData.text : ''}</Text>
             </View>
-          
+
 
         </Modalize>
 
@@ -257,8 +284,7 @@ const styles = StyleSheet.create({
         justifyContent: 'space-between',
         alignItems: 'center',
         width: '100%',
-        paddingHorizontal: 12,
-        paddingVertical: 8,
+        padding:8,
     },
     coverContainer: {
         flex: 1,
@@ -293,16 +319,16 @@ const styles = StyleSheet.create({
         flexDirection: 'row',
         justifyContent: 'center',
         alignItems: 'center',
-        height: 150,
+        height: 100,
     },
     micButtonContainer: {
         //backgroundColor: "#FFF",
         //borderColor: "rgba(93, 63, 106, 0.2)",
         backgroundColor: "rgba(18, 140, 126,1)",
         //borderWidth: 16,
-        width: 100,
-        height: 100,
-        borderRadius: 50,
+        width: 80,
+        height: 80,
+        borderRadius: 40,
         alignItems: "center",
         justifyContent: "center",
         marginHorizontal: 8,
@@ -319,9 +345,9 @@ const styles = StyleSheet.create({
         backgroundColor: "#FFF",
         //borderColor: "rgba(93, 63, 106, 0.2)",
         //borderWidth: 12,
-        width: 80,
-        height: 80,
-        borderRadius: 40,
+        width: 60,
+        height: 60,
+        borderRadius: 30,
         alignItems: "center",
         justifyContent: "center",
         marginHorizontal: 8,
@@ -337,25 +363,41 @@ const styles = StyleSheet.create({
     playIcon: {
         marginLeft: 8,
     },
+    cancelIcon: {
+        position: 'absolute',
+        top: -50,
+        backgroundColor: 'rgba(219 ,68 ,55,1)',
+        width: 40,
+        height: 40,
+        borderRadius: 20,
+        justifyContent: 'center',
+        alignItems: 'center',
+
+    },
+    stopCancelContainer: {
+        position: 'relative',
+        alignItems: 'center',
+    },
 
     descTextRight: {
         textAlign: 'right',
         paddingTop: 10,
         paddingRight: 10,
-        fontSize: 30,
-        fontFamily: FontType.arabic,
+        fontSize: 36,
+        fontFamily: FontType.alQalamQuran,
         lineHeight: 70,
-        letterSpacing:15,
+        letterSpacing: 15,
+        color:'rgba(18, 140, 126,1)'
     },
     textNumber: {
         color: Colors.grey,
-        fontSize: 18,
+        fontSize: 16,
         fontFamily: FontType.semiBold,
 
     },
     NumberCircle: {
-        height: 40,
-        width: 40,
+        height: 30,
+        width: 30,
         borderRadius: 100,
         borderColor: Colors.separator,
         borderWidth: 2,

@@ -27,8 +27,8 @@ const Styles = StyleSheet.create({
   },
   appImage: {
     marginBottom: 10,
-    height: 70,
-    width: 70,
+    height: 120,
+    width: 120,
   },
 });
 

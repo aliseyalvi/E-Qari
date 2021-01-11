@@ -35,7 +35,8 @@ const SettingsPage = ({ navigation }) => {
   };
 
   const onPressHelp = () => {
-    Linking.openURL('https://quran.kemenag.go.id/');
+    //Linking.openURL('https://quran.kemenag.go.id/');
+    console.log('help button is pressed');
   };
 
   const setLanguage = lang => async () => {
@@ -64,7 +65,7 @@ const SettingsPage = ({ navigation }) => {
   const GeneralSettings = [
     {
       title: I18n.t('FontType'),
-      description: 'LPMQ standar KEMENAG',
+      description: 'LPMQ standard',
       // eslint-disable-next-line no-alert
       onPress: () => alert('Not Ready'),
     },
