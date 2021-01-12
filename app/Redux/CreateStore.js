@@ -1,7 +1,7 @@
 import { applyMiddleware, createStore } from 'redux';
 import thunk from 'redux-thunk';
 import reduxLogger from 'redux-logger';
-
+import { reactotron } from '../config/ReactotronConfig';
 import { appReducer } from './Reducers/';
 
 const middleware = [thunk];

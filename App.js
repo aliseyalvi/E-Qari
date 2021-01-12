@@ -1,4 +1,7 @@
+import 'react-native-gesture-handler'
+
 import React from 'react';
+
 import { Provider as ReduxProvider } from 'react-redux';
 import { StatusBar } from 'react-native';
 import { I18nextProvider } from 'react-i18next';

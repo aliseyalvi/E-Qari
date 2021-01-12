@@ -9,8 +9,10 @@ const FontType = {
   arabic: 'LPMQ',
   kitabBold:  'Kitab-Bold',
   kitabRegular: 'Kitab-Regular',
-  alQalamQuran: 'Al Qalam Quran',
-  pdms: 'PDMS',
+  alQalamQuran: 'Al-Qalam-Quran',
+  alQalamQuranMajeed: 'Al-Qalam-Quran-Majeed',
+  aaQamri: 'AA-Sameer-Qamri',
+  pdms: '_PDMS_Saleem_QuranFont',
   muhammadi: 'MUHAMMADIBold'
 };
 
