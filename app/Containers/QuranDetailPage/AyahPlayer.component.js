@@ -51,9 +51,11 @@ const AyahPlayer = (props) => {
     const [isPlaying, setIsPlaying] = useState(false)
     const [isRecording, setIsRecording] = useState(false)
 
+    const [permissionStatus, setPermissionStatus] = useState(false)
     //set selected ayah stat based on context
     useEffect(() => {
         setSelectedAyah(selectedAyahData)
+        _requestRecordAudioPermission()
     }, [selectedAyahData])
 
 
@@ -119,11 +121,14 @@ const AyahPlayer = (props) => {
 
     //load sound recorder and record sound
     const recordAyah = () => {
+
+
         SoundRecorder.start(SoundRecorder.PATH_CACHE + '/test.mp4')
             .then(function () {
                 setIsRecording(true)
                 console.log('started recording');
             });
+
     }
 
 
@@ -162,13 +167,13 @@ const AyahPlayer = (props) => {
                 },
             );
             if (granted === PermissionsAndroid.RESULTS.GRANTED) {
-                return true;
+                setPermissionStatus(true)
             } else {
-                return false;
+                setPermissionStatus(false)
             }
         } catch (err) {
             console.error(err);
-            return false;
+            setPermissionStatus(false)
         }
     }
 
