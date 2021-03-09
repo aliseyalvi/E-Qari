@@ -183,7 +183,7 @@ const AyahPlayer = (props) => {
                 </TouchableOpacity>
 
                 <View style={styles.NumberCircle}>
-                    <Text style={styles.textNumber}>{selectedAyah ? selectedAyah.number : ''}</Text>
+                    <Text style={styles.textNumber}>{selectedAyah ? selectedAyah.numberInSurah : ''}</Text>
                 </View>
 
                 <TouchableOpacity
@@ -439,14 +439,14 @@ const styles = StyleSheet.create({
     },
     textNumber: {
         color: Colors.grey,
-        fontSize: 16,
+        fontSize: 13,
         fontFamily: FontType.semiBold,
 
     },
     NumberCircle: {
-        height: 30,
-        width: 30,
-        borderRadius: 100,
+        height: 32,
+        width: 32,
+        borderRadius: 16,
         borderColor: Colors.separator,
         borderWidth: 2,
         backgroundColor: Colors.white,
