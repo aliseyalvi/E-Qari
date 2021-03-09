@@ -6,9 +6,6 @@
     "android": "react-native run-android --appIdSuffix=release",
     "android-dev": "react-native run-android --variant=devDebug --appIdSuffix=dev",
     "android:beta": "react-native run-android --variant=betaDebug --appIdSuffix=beta",
-    "build": "react-native bundle --platform android --dev false --entry-file index.js --bundle-output android/app/src/main/assets/index.android.bundle --assets-dest android/app/src/main/res/  && rm -rf ./android/app/src/main/res/drawable-mdpi/ && rm -rf ./android/app/src/main/res/raw/",
-
-   "release": "yarn build && cd ./android && ./gradlew bundleRelease" ,
     "ios": "react-native run-ios",
     "start": "react-native start",
     "test": "jest",
