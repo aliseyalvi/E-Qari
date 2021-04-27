@@ -54,3 +54,4 @@ android/build
 ios/Pods
 yarn.lock
 *.lnk
+*.hprof
