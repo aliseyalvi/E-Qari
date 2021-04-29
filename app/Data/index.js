@@ -9,3 +9,6 @@ const getSurah = (surahId) =>{
     
 }
 export { getSurah }
+
+export const chaptersList = require('./chapters.json')
+

@@ -4,7 +4,7 @@ import QuranList from './QuranList.component';
 import { getQuranList } from '../../Redux/Actions/QuranList/QuranList';
 
 const mapStateToProps = state => ({
-  data: state.quranList.data,
+  chaptersData: state.quranList.data,
   isLoading: state.quranList.loading,
   isError: state.quranList.error,
   errorMessage: state.quranList.errorMessage,

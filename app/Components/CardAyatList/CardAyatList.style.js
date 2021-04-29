@@ -4,21 +4,39 @@ import { Colors } from '../../Themes/Colors';
 import { FontType } from '../../Themes/Fonts';
 
 const Styles = StyleSheet.create({
+  rippleContainer:{
+    borderRadius:8,
+    marginVertical:8,
+    // shadowColor: "#000",
+    // shadowOffset:{
+    // width: 0,
+    // height: 1,
+    // },
+    // shadowOpacity: 0.20,
+    // shadowRadius: 1.41,
+    // elevation: 3,
+    borderWidth:1,
+    borderColor:'rgba(0,0,0,0.1)'
+  },
   CardStyle: {
     height: 'auto',
-    padding: 10,
+    width:'100%',
+    padding: 8,
+    
+    
   },
   cardContainer: {
     flex: 1,
     flexDirection: 'row',
   },
   numberCircleContainer: {
-    flex: 0.75,
+    // flex: 0.75,
   },
-  descContainer: {
-    flex: 3,
+  ayahContainer: {
+    flex: 1,
     flexDirection: 'column',
-    justifyContent: 'center',
+    justifyContent: 'space-between',
+    alignItems:'flex-end',
   },
   NumberCircle: {
     height: 45,
@@ -36,7 +54,7 @@ const Styles = StyleSheet.create({
   textNumber: {
     color: Colors.grey,
     fontSize: 18,
-    fontFamily: FontType.semiBold,
+    fontFamily: FontType.alQalamQuran,
   },
   descTextRight: {
     textAlign: 'right',
@@ -44,9 +62,19 @@ const Styles = StyleSheet.create({
     paddingRight: 10,
     fontSize: 32,
     fontFamily: FontType.alQalamQuran,
-    lineHeight: 70,
+    lineHeight: 50,
     letterSpacing:5,
   },
+  translationtext:{
+    textAlign: 'right',
+    paddingTop: 10,
+    paddingRight: 10,
+    fontSize: 20,
+    fontFamily: FontType.jameelNoriNastaleeq,
+    lineHeight: 20,
+    letterSpacing:5,
+  },
+
   descTextLeftContainer: {
     paddingVertical: 10,
     paddingRight: 10,

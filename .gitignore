@@ -55,3 +55,4 @@ ios/Pods
 yarn.lock
 *.lnk
 *.hprof
+yarn.lock

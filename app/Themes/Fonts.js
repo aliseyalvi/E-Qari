@@ -13,7 +13,8 @@ const FontType = {
   //alQalamQuranMajeed: 'Al-Qalam-Quran-Majeed',
   aaQamri: 'AA-Sameer-Qamri',
   pdms: '_PDMS_Saleem_QuranFont',
-  muhammadi: 'MUHAMMADIBold'
+  muhammadi: 'MUHAMMADIBold',
+  jameelNoriNastaleeq: 'Jameel-Noori-Nastaleeq'
 };
 
 const FontWeight = {
