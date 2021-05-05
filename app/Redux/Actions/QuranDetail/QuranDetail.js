@@ -7,7 +7,10 @@ import {
   REQ_QURAN_TRANSLATION_FAILURE,
 } from '../Types';
 import axios from 'axios';
-import { quranArabicEndpoint , quranArabicAudioTranslationEndpoint } from '../../../Utils/EndPoints';
+import {
+  quranArabicEndpoint,
+  quranArabicAudioTranslationEndpoint,
+} from '../../../Utils/EndPoints';
 import { Constants } from '../../../Utils/Constants';
 import { surahs } from '../../../Assets/surah';
 import { getSurah } from '../../../Data';
@@ -15,7 +18,12 @@ import { getSurah } from '../../../Data';
 import Reactotron from 'reactotron-react-native';
 
 const getDetailQuran = payload => async dispatch => {
+  // dispatch empty action to start the api call and make loading and refreshing true
+  dispatch({ type: REQ_QURAN_DETAIL });
+
+  // destructure payload parameters
   const { surahId, countAyat } = payload;
+
   // console.log('surahId : ', surahId);
   // console.log('endpoint : ', quranArabicEndpoint(surahId));
   // dispatch({ type: REQ_QURAN_DETAIL });
@@ -54,9 +62,15 @@ const getDetailQuran = payload => async dispatch => {
 };
 
 const getQuranTextAudioTranslationDefault = payload => async dispatch => {
-  const { surahId } = payload;
+  // dispatch empty action to start the api call and make loading and refreshing true
+  dispatch({ type: REQ_QURAN_DETAIL });
+
+  // destructure payload parameters
+  const { surahId, countAyat } = payload;
   try {
-    const response = await axios.get(quranArabicAudioTranslationEndpoint(surahId));
+    const response = await axios.get(
+      quranArabicAudioTranslationEndpoint(surahId),
+    );
     console.log('getQuranTextAudioTranslationDefault response : ', response);
     if (response?.status === Constants.RESPONSE_CODE.SUCCESS) {
       dispatch({
@@ -76,7 +90,5 @@ const getQuranTextAudioTranslationDefault = payload => async dispatch => {
     });
   }
 };
-
-
 
 export { getDetailQuran, getQuranTextAudioTranslationDefault };

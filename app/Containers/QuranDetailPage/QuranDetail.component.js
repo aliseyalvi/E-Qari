@@ -25,10 +25,10 @@ import { keyExtractor } from '../../Utils/Helper';
 import { FontType } from '../../Themes/Fonts';
 import { Colors } from '../../Themes/Colors';
 import { RbSheetStyle } from '../../Themes/Styles';
-import Reactotron from 'reactotron-react-native';
 import { AyahPlayer } from './AyahPlayer.component';
 //import SurahDataProvider from SurahDataContext
 import { SurahDataProvider } from './SurahDataContext';
+
 
 function QuranDetail(props) {
   const {
@@ -37,6 +37,7 @@ function QuranDetail(props) {
     getDetailQuran,
     getQuranTextAudioTranslationDefault,
     refreshing,
+    isLoading,
     navigation,
   } = props;
 
@@ -209,7 +210,7 @@ function QuranDetail(props) {
   const ayahPlayerModalizeRef = useRef(null);
   const [selectedAyah, setSelectedAyah] = useState(null);
   const openAyahPlayerModal = ayahData => {
-    Reactotron.log('openAyahPlayerModal', ayahData);
+    // Reactotron.log('openAyahPlayerModal', ayahData);
     setSelectedAyah(ayahData);
     ayahPlayerModalizeRef.current?.open();
   };
@@ -219,7 +220,8 @@ function QuranDetail(props) {
     );
   };
 
-  return props.isLoading ? (
+  console.log('isLoading : ', isLoading);
+  return isLoading ? (
     <Loading />
   ) : (
     <>
@@ -259,7 +261,7 @@ QuranDetail.navigationOptions = ({
 };
 
 //export const SurahDataContext = React.createContext(props.arabicData)
-Reactotron.log('');
+// Reactotron.log('');
 const Styles = StyleSheet.create({
   bsContainer: {
     flex: 1,
