@@ -25,15 +25,24 @@ import { keyExtractor } from '../../Utils/Helper';
 import { FontType } from '../../Themes/Fonts';
 import { Colors } from '../../Themes/Colors';
 import { RbSheetStyle } from '../../Themes/Styles';
-import Reactotron from 'reactotron-react-native'
-import { AyahPlayer } from './AyahPlayer.component'
+import { AyahPlayer } from './AyahPlayer.component';
 //import SurahDataProvider from SurahDataContext
-import {SurahDataProvider} from './SurahDataContext'
+import { SurahDataProvider } from './SurahDataContext';
+
 
 function QuranDetail(props) {
+  const {
+    arabicData,
+    translationData,
+    getDetailQuran,
+    getQuranTextAudioTranslationDefault,
+    refreshing,
+    isLoading,
+    navigation,
+  } = props;
+
   const refRBSheet = useRef();
   const [rbSheetData, setRbSheetData] = useState({});
-
 
   useEffect(() => {
     renderDetailSurah();
@@ -63,8 +72,6 @@ function QuranDetail(props) {
   ];
 
   const renderDetailSurah = async () => {
-    const { getDetailQuran, navigation } = props;
-
     const surahId = get(navigation, 'state.params.dataSurah.number');
     const countAyat = get(navigation, 'state.params.dataSurah.numberOfAyahs');
 
@@ -72,8 +79,8 @@ function QuranDetail(props) {
       surahId,
       countAyat,
     };
-
-    await getDetailQuran(payload);
+    await getQuranTextAudioTranslationDefault(payload);
+    // await getDetailQuran(payload);
   };
 
   const openBottomSheet = item => () => {
@@ -85,8 +92,9 @@ function QuranDetail(props) {
   const onTapShare = async () => {
     try {
       const result = await Share.share({
-        message: `${rbSheetData.aya_text}\n\n${rbSheetData.translation_aya_text
-          }`,
+        message: `${rbSheetData.aya_text}\n\n${
+          rbSheetData.translation_aya_text
+        }`,
       });
       if (result.action === Share.sharedAction) {
         if (!result.activityType) {
@@ -114,8 +122,6 @@ function QuranDetail(props) {
   };
 
   const listHeaderComponent = () => {
-    const { navigation } = props;
-
     const surahId = get(navigation, 'state.params.dataSurah.id', '');
 
     switch (surahId) {
@@ -129,11 +135,14 @@ function QuranDetail(props) {
   };
 
   const renderCardContent = ({ item, index }) => {
+    // get translation text from translationData and pass into ayah list component
+    const translationText = translationData?.ayahs[index].text
     return (
       <CardAyatList
         ayatNumber={index + 1}
         //ayatNumber={item?.number}
         ayatText={item?.text}
+        translationText = {translationText}
         //ayatTranslate={item?.translation_aya_text}
         //onPress={openBottomSheet(item)}
         ayahData={item}
@@ -143,7 +152,6 @@ function QuranDetail(props) {
   };
 
   const renderQuranOptions = () => {
-    const { navigation } = props;
     const surahName = get(navigation, 'state.params.dataSurah.surat_name', '');
     return (
       <View style={Styles.bsContainer}>
@@ -183,55 +191,49 @@ function QuranDetail(props) {
 
   //render ayahs flatlist
   const renderData = () => {
-    const { dataAyat, refreshing } = props;
-    const ayaat = dataAyat.ayahs
-    Reactotron.log('Ayyats:', dataAyat.ayahs)
+
     return (
       <FlatList
-        data={dataAyat.ayahs}
+        data={arabicData.ayahs} //pass arabicData.ayahs in flatlist which is arabic data fetchced from api
         keyExtractor={keyExtractor}
         renderItem={renderCardContent}
         refreshing={refreshing}
         onRefresh={renderDetailSurah}
         ItemSeparatorComponent={Separator}
         showsVerticalScrollIndicator={false}
-      //ListHeaderComponent={listHeaderComponent}
+        //ListHeaderComponent={listHeaderComponent}
       />
     );
   };
 
   //Load modal ayah player modal component
   const ayahPlayerModalizeRef = useRef(null);
-  const [selectedAyah, setSelectedAyah] = useState(null)
-  const openAyahPlayerModal = (ayahData) => {
-    Reactotron.log('openAyahPlayerModal', ayahData)
-    setSelectedAyah(ayahData)
+  const [selectedAyah, setSelectedAyah] = useState(null);
+  const openAyahPlayerModal = ayahData => {
+    // Reactotron.log('openAyahPlayerModal', ayahData);
+    setSelectedAyah(ayahData);
     ayahPlayerModalizeRef.current?.open();
-  }
+  };
   const renderAyahPlayerModal = () => {
     return (
-      <AyahPlayer
-        forwardRef={ayahPlayerModalizeRef}
-        ayahData={selectedAyah}
-      />
-    )
-  }
+      <AyahPlayer forwardRef={ayahPlayerModalizeRef} ayahData={selectedAyah} />
+    );
+  };
 
-  //return Quran Details component render method
-  Reactotron.log('surahdetails in props', props.dataAyat)
-  
-  return props.isLoading ? (
+  console.log('isLoading : ', isLoading);
+  return isLoading ? (
     <Loading />
   ) : (
-      <>
-        <SurahDataProvider value={{...props.dataAyat,selectedAyahData: selectedAyah}}>
-          {renderData()}
+    <>
+      <SurahDataProvider
+        value={{ ...props.arabicData, selectedAyahData: selectedAyah }}>
+        {renderData()}
 
-          {renderAyahPlayerModal()}
-          {renderBottomSheet()}
-          </SurahDataProvider>
-      </>
-    );
+        {renderAyahPlayerModal()}
+        {renderBottomSheet()}
+      </SurahDataProvider>
+    </>
+  );
 }
 
 QuranDetail.navigationOptions = ({
@@ -241,7 +243,7 @@ QuranDetail.navigationOptions = ({
     },
   },
 }) => {
-  console.log('datasurah', dataSurah)
+  console.log('datasurah', dataSurah);
   const suratName = dataSurah.englishName;
   const suratArabic = dataSurah.name;
   const suratTranslate = dataSurah.englishNameTranslation;
@@ -258,8 +260,8 @@ QuranDetail.navigationOptions = ({
   };
 };
 
-//export const SurahDataContext = React.createContext(props.dataAyat)
-Reactotron.log('')
+//export const SurahDataContext = React.createContext(props.arabicData)
+// Reactotron.log('');
 const Styles = StyleSheet.create({
   bsContainer: {
     flex: 1,

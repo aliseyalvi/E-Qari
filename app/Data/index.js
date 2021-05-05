@@ -8,4 +8,7 @@ const getSurah = (surahId) =>{
     }
     
 }
-export { getSurah }
+
+const surahList = require('./surahList.json')
+
+export { getSurah , surahList }
