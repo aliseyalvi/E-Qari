@@ -7,7 +7,7 @@ import { Styles } from './CardAyatList.style';
 import { Colors } from '../../Themes/Colors';
 import Reactotron from 'reactotron-react-native'
 const CardAyatList = props => {
-  const { ayatNumber, ayatText, ayatTranslate, onPress,ayahData } = props;
+  const { ayatNumber, ayatText, translationText, onPress,ayahData } = props;
   Reactotron.log('ayahData',ayahData)
   return (
     <TouchableRipple
@@ -23,13 +23,7 @@ const CardAyatList = props => {
           </View>
           <View style={Styles.descContainer}>
             <Text style={Styles.descTextRight}>{ayatText}</Text>
-            {/** 
-            <HTML
-              html={ayatTranslate}
-              containerStyle={Styles.descTextLeftContainer}
-              baseFontStyle={Styles.descTextLeft}
-            />
-            */}
+            <Text style={Styles.translationText}>{translationText}</Text>
           </View>
         </View>
       </View>
