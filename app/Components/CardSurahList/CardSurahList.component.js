@@ -19,7 +19,9 @@ const CardSurahList = props => {
     <TouchableRipple
       onPress={onPress}
       rippleColor={Colors.rippleColor}
-      centered>
+      centered
+      style={Styles.touchableContainer}
+      >
       <View style={Styles.CardStyle}>
         <View style={Styles.cardContainer}>
           <View style={Styles.numberCircleContainer}>

@@ -4,6 +4,12 @@ import { Colors } from '../../Themes/Colors';
 import { FontType } from '../../Themes/Fonts';
 
 const Styles = StyleSheet.create({
+  touchableContainer:{
+    borderColor:'rgba(0,0,0,0.1)',
+    borderWidth:1,
+    borderRadius:8,
+    marginTop:8,
+  },
   CardStyle: {
     height: 100,
     marginHorizontal: 10,
