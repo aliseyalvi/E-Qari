@@ -3,7 +3,6 @@ import {
   REQ_QURAN_LIST_SUCCESS,
   REQ_QURAN_LIST_FAILURE,
 } from '../Types';
-import {chaptersList} from '../../../Data'
 import axios from 'axios';
 import { quranList } from '../../../Utils/EndPoints';
 import { Constants } from '../../../Utils/Constants';
@@ -14,10 +13,10 @@ const getQuranList = () => async dispatch => {
     //const response = await axios.get(quranList);
     //const response = require('./quranList.json')
     const response = require('./surah.json')
-    // console.log('response in actions chaptersList',chaptersList)
+    //console.log('response in actions',response.data)
     dispatch({
       type: REQ_QURAN_LIST_SUCCESS,
-      payload: chaptersList.chapters,
+      payload: response.data,
     });
     /* if (response?.status === Constants.RESPONSE_CODE.SUCCESS) {
       dispatch({

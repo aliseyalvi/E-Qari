@@ -3,7 +3,7 @@ import thunk from 'redux-thunk';
 import reduxLogger from 'redux-logger';
 import { reactotron } from '../config/ReactotronConfig';
 import { appReducer } from './Reducers/';
-import { composeWithDevTools } from 'redux-devtools-extension';
+
 const middleware = [thunk];
 
 // if (__DEV__) {
@@ -14,6 +14,6 @@ const rootReducer = (state, action) => {
   return appReducer(state, action);
 };
 
-const store = createStore(rootReducer, composeWithDevTools(applyMiddleware(...middleware)));
+const store = createStore(rootReducer, applyMiddleware(...middleware));
 
 export { store };

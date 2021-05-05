@@ -15,7 +15,7 @@ function QuranList(props) {
     navigation,
     isError,
     errorMessage,
-    chaptersData,
+    data,
     refreshing,
     isLoading,
   } = props;
@@ -45,23 +45,23 @@ function QuranList(props) {
   };
 
   const renderCardContent = ({ item }) => {
-    console.log(item);
     return (
       <CardSurahList
-        surahNumber={item?.id}
-        surahText={item?.name_arabic}
-        surahName={item?.name_simple}
-        surahMean={item?.translated_name?.name}
-        surahAyat={item?.verses_count}
+        surahNumber={item?.number}
+        surahText={item?.name}
+        surahName={item?.englishName}
+        surahMean={item?.englishNameTranslation}
+        surahAyat={item?.numberOfAyahs}
         onPress={() => goToDetailpage(item)}
       />
     );
   };
 
   const renderData = () => {
+    //console.log(data)
     return (
       <FlatList
-        data={chaptersData}
+        data={data}
         keyExtractor={keyExtractor}
         renderItem={renderCardContent}
         refreshing={refreshing}

@@ -38,15 +38,14 @@ const AyahPlayer = (props) => {
         forwardRef,
         ayahData
     } = props
-    console.log('ayah data in player modal ', ayahData)
+    Reactotron.log('ayah data in player modal ', ayahData)
 
-    const { arabicAyatData, selectedAyahData } = useContext(SurahDataContext)
-    console.log('arabicAyatData, selectedAyahData : ',  arabicAyatData, selectedAyahData);
+    const { ayahs, selectedAyahData } = useContext(SurahDataContext)
     //destructure surahdata context
     //const surahData =  useContext(SurahDataContext)
     //Reactotron.log('surah data in player modal',surahData )
     const [selectedAyah, setSelectedAyah] = useState(null)
-    console.log('selected ayah in player modal', selectedAyahData)
+    Reactotron.log('selected ayah in player modal', selectedAyahData)
     const [recordFile, setRecordFile] = useState('')
     const [isPlayClicked, setIsPlayClicked] = useState(false)
     const [isPlaying, setIsPlaying] = useState(false)
@@ -62,19 +61,18 @@ const AyahPlayer = (props) => {
 
     //handle play next button
     const handleNext = () => {
-        const currAyah = selectedAyah ? selectedAyah.id : 1
-        console.log('currAyah : ', currAyah)
-        const nextAyah = arabicAyatData.find(o => o.id == currAyah + 1)
-        console.log('next ayah is :', nextAyah)
+        const currAyah = selectedAyah ? selectedAyah.number : 1
+        const nextAyah = ayahs.find(o => o.number == currAyah + 1)
+        Reactotron.log('next ayah is :', nextAyah)
         if (nextAyah) {
             setSelectedAyah(nextAyah)
         }
     }
     //handle play prev button
     const handlePrev = () => {
-        const currAyah = selectedAyah ? selectedAyah.id : 1
-        const prevAyah = arabicAyatData.find(o => o.id == currAyah - 1)
-        console.log('prev ayah is :', prevAyah)
+        const currAyah = selectedAyah ? selectedAyah.number : 1
+        const prevAyah = ayahs.find(o => o.number == currAyah - 1)
+        Reactotron.log('prev ayah is :', prevAyah)
         if (prevAyah) {
             setSelectedAyah(prevAyah)
         }
@@ -190,7 +188,7 @@ const AyahPlayer = (props) => {
                 </TouchableOpacity>
 
                 <View style={styles.NumberCircle}>
-                    <Text style={styles.textNumber}>{selectedAyah ? selectedAyah.id : ''}</Text>
+                    <Text style={styles.textNumber}>{selectedAyah ? selectedAyah.numberInSurah : ''}</Text>
                 </View>
 
                 <TouchableOpacity
@@ -302,7 +300,7 @@ const AyahPlayer = (props) => {
         >
 
             <View style={styles.coverContainer}>
-                <Text style={styles.descTextRight}>{selectedAyah ? selectedAyah.text_indopak : ''}</Text>
+                <Text style={styles.descTextRight}>{selectedAyah ? selectedAyah.text : ''}</Text>
             </View>
 
 
@@ -439,8 +437,7 @@ const styles = StyleSheet.create({
         paddingTop: 10,
         paddingRight: 10,
         fontSize: 36,
-        // fontFamily: FontType.aaQamri,
-        fontFamily: FontType.pdms,
+        fontFamily: FontType.aaQamri,
         lineHeight: 70,
         letterSpacing: 15,
         color: 'rgba(18, 140, 126,1)'

@@ -2,7 +2,6 @@ import {
   REQ_QURAN_DETAIL,
   REQ_QURAN_DETAIL_SUCCESS,
   REQ_QURAN_DETAIL_FAILURE,
-
 } from '../../Actions/Types';
 
 const initialState = {
@@ -49,6 +48,5 @@ const QuranDetail = (state = initialState, action) => {
       return state;
   }
 };
-
 
 export { QuranDetail };
