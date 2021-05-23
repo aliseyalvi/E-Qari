@@ -60,7 +60,6 @@ const QuranDetail = (state = initialState, action) => {
         errorMessage: '',
         loading: true,
         refreshing: true,
-        // translationData: initialState.translationData,
       };
     case REQ_QURAN_TRANSLATION_SUCCESS:
       return {
@@ -79,7 +78,6 @@ const QuranDetail = (state = initialState, action) => {
         errorMessage: action.error,
         loading: false,
         refreshing: false,
-        // translationData: initialState.translationData,
       };
 
     default:

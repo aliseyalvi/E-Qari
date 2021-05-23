@@ -10,6 +10,7 @@ import axios from 'axios';
 import {
   quranArabicEndpoint,
   quranArabicAudioTranslationEndpoint,
+  quranUrduTranslationEndpoint,
 } from '../../../Utils/EndPoints';
 import { Constants } from '../../../Utils/Constants';
 import { surahs } from '../../../Assets/surah';
@@ -91,4 +92,40 @@ const getQuranTextAudioTranslationDefault = payload => async dispatch => {
   }
 };
 
-export { getDetailQuran, getQuranTextAudioTranslationDefault };
+// request quran translations based on selection
+const getQuranTranslationSelected = payload => async dispatch => {
+  // dispatch empty action to start the api call and make loading and refreshing true
+  dispatch({ type: REQ_QURAN_TRANSLATION });
+
+  // destructure payload parameters
+  const { surahId, translationKey } = payload;
+  console.log('surahId, translationKey : ', surahId, translationKey)
+  try {
+    const response = await axios.get(
+      quranUrduTranslationEndpoint(surahId, translationKey),
+    );
+    console.log('quranUrduTranslationEndpoint response : ', response);
+    if (response?.status === Constants.RESPONSE_CODE.SUCCESS) {
+      dispatch({
+        type: REQ_QURAN_TRANSLATION_SUCCESS,
+        payload: response?.data?.data,
+      });
+    } else {
+      dispatch({
+        type: REQ_QURAN_TRANSLATION_FAILURE,
+        error: 'Error while fetching data',
+      });
+    }
+  } catch (error) {
+    dispatch({
+      type: REQ_QURAN_TRANSLATION_FAILURE,
+      error: 'Error while fetching data',
+    });
+  }
+};
+
+export {
+  getDetailQuran,
+  getQuranTextAudioTranslationDefault,
+  getQuranTranslationSelected,
+};

@@ -8,17 +8,23 @@ import { Colors } from '../../Themes/Colors';
 import Reactotron from 'reactotron-react-native'
 const CardAyatList = props => {
   const { ayatNumber, ayatText, translationText, onPress,ayahData } = props;
-  Reactotron.log('ayahData',ayahData)
+  const arabicAyahSymbol  = "\u06DD";
+
   return (
     <TouchableRipple
       rippleColor={Colors.rippleColor}
       centered
-      onPress={()=>onPress(ayahData)}>
+      onPress={()=>onPress(ayahData)}
+      style={Styles.touchableContainer}  
+    >
       <View style={Styles.CardStyle}>
         <View style={Styles.cardContainer}>
           <View style={Styles.numberCircleContainer}>
             <View style={Styles.NumberCircle}>
-              <Text style={Styles.textNumber}>{ayatNumber}</Text>
+              <Text style={Styles.textNumber}>{arabicAyahSymbol}</Text>
+              <Text style={Styles.ayahNumber}>
+                {ayatNumber}
+              </Text>
             </View>
           </View>
           <View style={Styles.descContainer}>

@@ -1,7 +1,11 @@
 import { connect } from 'react-redux';
 
 import QuranDetail from './QuranDetail.component';
-import { getDetailQuran, getQuranTextAudioTranslationDefault } from '../../Redux/Actions/QuranDetail/QuranDetail';
+import {
+  getDetailQuran,
+  getQuranTextAudioTranslationDefault,
+  getQuranTranslationSelected
+} from '../../Redux/Actions/QuranDetail/QuranDetail';
 
 const mapStateToProps = state => ({
   arabicData: state.qurandetail.data,
@@ -12,8 +16,11 @@ const mapStateToProps = state => ({
 
 const mapDispatchToProps = dispatch => ({
   getDetailQuran: payload => dispatch(getDetailQuran(payload)),
-  getQuranTextAudioTranslationDefault: payload => dispatch(getQuranTextAudioTranslationDefault(payload)),
 
+  getQuranTextAudioTranslationDefault: payload =>
+    dispatch(getQuranTextAudioTranslationDefault(payload)),
+
+    getQuranTranslationSelected: payload => dispatch(getQuranTranslationSelected(payload)),
 });
 
 export default connect(

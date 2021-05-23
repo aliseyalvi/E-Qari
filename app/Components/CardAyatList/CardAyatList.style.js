@@ -4,6 +4,15 @@ import { Colors } from '../../Themes/Colors';
 import { FontType } from '../../Themes/Fonts';
 
 const Styles = StyleSheet.create({
+  touchableContainer: {
+    borderColor:'rgba(0,0,0,0.1)',
+    borderWidth:1,
+    marginVertical:8,
+    // elevation:1,
+    borderRadius:8,
+    backgroundColor:'#fff'
+  },
+
   CardStyle: {
     height: 'auto',
     padding: 10,
@@ -11,31 +20,32 @@ const Styles = StyleSheet.create({
   cardContainer: {
     flex: 1,
     flexDirection: 'row',
+    
   },
   numberCircleContainer: {
-    flex: 0.75,
+    justifyContent:'center',
+    alignItems:'center',
+    paddingHorizontal:8,
   },
   descContainer: {
-    flex: 3,
+    flex: 1,
     flexDirection: 'column',
     justifyContent: 'center',
   },
   NumberCircle: {
-    height: 45,
-    width: 45,
-    borderRadius: 100,
-    borderColor: Colors.separator,
-    borderWidth: 2,
     backgroundColor: Colors.white,
     justifyContent: 'center',
     alignItems: 'center',
-    marginTop: 25,
-    marginLeft: 5,
-    marginBottom: 10,
+    fontSize:20
+  },
+  ayahNumber:{
+    position:'absolute',
+    fontFamily: FontType.jameelNoriReg,
+    fontSize:16
   },
   textNumber: {
     color: Colors.grey,
-    fontSize: 18,
+    fontSize: 22,
     fontFamily: FontType.semiBold,
   },
   descTextRight: {

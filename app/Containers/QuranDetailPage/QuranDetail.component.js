@@ -9,10 +9,13 @@ import {
   Share,
   TouchableNativeFeedback,
   ToastAndroid,
+  TouchableOpacity,
+  ScrollView,
+  Image,
 } from 'react-native';
 import RBSheet from 'react-native-raw-bottom-sheet';
 import Clipboard from '@react-native-community/clipboard';
-import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
+import Icon from 'react-native-vector-icons/Ionicons';
 import get from 'lodash/get';
 
 import { Basmallah } from '../../Components/Basmallah/Basmallah.component';
@@ -29,13 +32,13 @@ import { AyahPlayer } from './AyahPlayer.component';
 //import SurahDataProvider from SurahDataContext
 import { SurahDataProvider } from './SurahDataContext';
 
-
 function QuranDetail(props) {
   const {
     arabicData,
     translationData,
     getDetailQuran,
     getQuranTextAudioTranslationDefault,
+    getQuranTranslationSelected,
     refreshing,
     isLoading,
     navigation,
@@ -43,33 +46,87 @@ function QuranDetail(props) {
 
   const refRBSheet = useRef();
   const [rbSheetData, setRbSheetData] = useState({});
-
+  const [selectedTranslation, setSelectedTranslation] = useState('ur.maududi');
   useEffect(() => {
+    // pass customHeaderComponent as param to navigation options for rendering in header
+    navigation.setParams({
+      customHeaderComponent: customHeaderComponent,
+    });
+
+    // render surah details, fetch data from API and load in store.
     renderDetailSurah();
   }, []);
 
-  const quranOptions = [
+  // render custom navigation header component
+  const customHeaderComponent = () => {
+    const dataSurah = get(navigation, 'state.params.dataSurah');
+    console.log('dataSurah : ', dataSurah);
+    return (
+      <HeaderSurahDetail
+        suratName={dataSurah.englishName}
+        suratArabic={dataSurah.name}
+        suratTranslate={dataSurah.englishNameTranslation}
+        countAyat={dataSurah.numberOfAyahs}
+        rightIcon1={
+          <TouchableOpacity onPress={openBottomSheet}>
+            <Icon name={'book'} size={26} color="#93A8B3" />
+          </TouchableOpacity>
+        }
+      />
+    );
+  };
+
+  const translationsOptions = [
     {
-      icon: 'play',
-      title: 'Mainkan Surat',
+      key: 'ur.jalandhry',
+      name: 'Fateh Muhammad Jalandhry',
+      icon: 'person-circle',
+      image: undefined,
       action: () => null,
     },
     {
-      icon: 'book-open-variant',
-      title: 'Lihat Tafsir',
+      key: 'ur.kanzuliman',
+      name: 'Ahmed Raza Khan',
+      icon: undefined,
+      image: require('../../Assets/Images/ahmed-raza-khan-barelvi.jpg'),
       action: () => null,
     },
     {
-      icon: 'content-copy',
-      title: 'Salin Ayat',
-      action: () => onTapCopy(),
+      key: 'ur.qadri',
+      name: 'Tahir ul Qadri',
+      icon: undefined,
+      image: require('../../Assets/Images/tahir-ul-qadri.jpg'),
+      action: () => null,
     },
     {
-      icon: 'share-variant',
-      title: 'Bagikan Ayat',
-      action: () => onTapShare(),
+      key: 'ur.junagarhi',
+      name: 'Muhammad Junagarhi',
+      icon: 'person-circle',
+      image: undefined,
+      action: () => null,
+    },
+    {
+      key: 'ur.maududi',
+      name: "Abul A'ala Maududi",
+      icon: undefined,
+      image: require('../../Assets/Images/molana-modudi.jpg'),
+      action: () => null,
     },
   ];
+
+  // change translation based on user selection
+  const changeTranslation = async key => {
+    setSelectedTranslation(key);
+    const surahId = get(navigation, 'state.params.dataSurah.number');
+    const translationKey = key;
+    const payload = {
+      surahId,
+      translationKey,
+    };
+
+    // fetch the translatio from API using redux
+    await getQuranTranslationSelected(payload);
+  };
 
   const renderDetailSurah = async () => {
     const surahId = get(navigation, 'state.params.dataSurah.number');
@@ -79,13 +136,16 @@ function QuranDetail(props) {
       surahId,
       countAyat,
     };
+
+    // get quran data with text, audio and translation from redux
     await getQuranTextAudioTranslationDefault(payload);
     // await getDetailQuran(payload);
   };
 
-  const openBottomSheet = item => () => {
-    console.log(item);
-    setRbSheetData(item);
+  const openBottomSheet = () => {
+    // console.log(item);
+    // setRbSheetData(item);
+    console.log('open bottom sheet');
     refRBSheet.current.open();
   };
 
@@ -121,7 +181,7 @@ function QuranDetail(props) {
     refRBSheet.current.close();
   };
 
-  const listHeaderComponent = () => {
+  /* const listHeaderComponent = () => {
     const surahId = get(navigation, 'state.params.dataSurah.id', '');
 
     switch (surahId) {
@@ -132,17 +192,28 @@ function QuranDetail(props) {
       default:
         return <Basmallah />;
     }
+  }; */
+
+  // render header component for flatlist, select translations here
+  const listHeaderComponent = () => {
+    return (
+      <View style={Styles.translationSelectContainer}>
+        <TouchableOpacity onPress={() => openBottomSheet()}>
+          <Text>Translation Selection</Text>
+        </TouchableOpacity>
+      </View>
+    );
   };
 
   const renderCardContent = ({ item, index }) => {
     // get translation text from translationData and pass into ayah list component
-    const translationText = translationData?.ayahs[index].text
+    const translationText = translationData?.ayahs[index].text;
     return (
       <CardAyatList
         ayatNumber={index + 1}
         //ayatNumber={item?.number}
         ayatText={item?.text}
-        translationText = {translationText}
+        translationText={translationText}
         //ayatTranslate={item?.translation_aya_text}
         //onPress={openBottomSheet(item)}
         ayahData={item}
@@ -151,7 +222,7 @@ function QuranDetail(props) {
     );
   };
 
-  const renderQuranOptions = () => {
+  const renderTranslationsOptions = () => {
     const surahName = get(navigation, 'state.params.dataSurah.surat_name', '');
     return (
       <View style={Styles.bsContainer}>
@@ -160,17 +231,32 @@ function QuranDetail(props) {
           barStyle="dark-content"
           animated
         />
-        <Text style={Styles.bsTextInfo}>
-          QS. {surahName}: Ayat {rbSheetData.aya_number}
-        </Text>
-        {quranOptions.map((item, i) => (
-          <TouchableNativeFeedback onPress={item.action} key={i}>
-            <View style={Styles.bsItemContainer}>
-              <Icon name={item.icon} size={24} color="black" />
-              <Text style={Styles.bsItemText}>{item.title}</Text>
-            </View>
-          </TouchableNativeFeedback>
-        ))}
+        <Text style={Styles.bsTextInfo}>Select Translation</Text>
+        <ScrollView>
+          {translationsOptions.map((item, i) => (
+            <TouchableNativeFeedback
+              onPress={() => changeTranslation(item.key)}
+              key={i}>
+              <View style={Styles.bsItemContainer}>
+                <View style={Styles.nameIconWrapper}>
+                {item.icon ? (
+                  <Icon name={item.icon} size={40} color="black" />
+                ) : (
+                  <Image
+                    source={item.image}
+                    style={{ width: 40, height: 40, borderRadius: 20 }}
+                  />
+                )}
+
+                <Text style={Styles.bsItemText}>{item.name}</Text>
+                </View>
+                {item.key === selectedTranslation ? (
+                  <Icon name={'checkmark'} size={24} color="black" />
+                ) : null}
+              </View>
+            </TouchableNativeFeedback>
+          ))}
+        </ScrollView>
       </View>
     );
   };
@@ -184,14 +270,13 @@ function QuranDetail(props) {
         duration={250}
         closeOnPressMask={true}
         customStyles={RbSheetStyle}>
-        {renderQuranOptions()}
+        {renderTranslationsOptions()}
       </RBSheet>
     );
   };
 
   //render ayahs flatlist
   const renderData = () => {
-
     return (
       <FlatList
         data={arabicData.ayahs} //pass arabicData.ayahs in flatlist which is arabic data fetchced from api
@@ -199,9 +284,10 @@ function QuranDetail(props) {
         renderItem={renderCardContent}
         refreshing={refreshing}
         onRefresh={renderDetailSurah}
-        ItemSeparatorComponent={Separator}
+        // ItemSeparatorComponent={Separator}
         showsVerticalScrollIndicator={false}
-        //ListHeaderComponent={listHeaderComponent}
+        // ListHeaderComponent={listHeaderComponent}
+        style={{paddingHorizontal:8,}}
       />
     );
   };
@@ -220,7 +306,8 @@ function QuranDetail(props) {
     );
   };
 
-  console.log('isLoading : ', isLoading);
+  console.log('selectedTranslation : ', selectedTranslation);
+
   return isLoading ? (
     <Loading />
   ) : (
@@ -236,29 +323,46 @@ function QuranDetail(props) {
   );
 }
 
-QuranDetail.navigationOptions = ({
-  navigation: {
-    state: {
-      params: { dataSurah },
-    },
-  },
-}) => {
-  console.log('datasurah', dataSurah);
-  const suratName = dataSurah.englishName;
-  const suratArabic = dataSurah.name;
-  const suratTranslate = dataSurah.englishNameTranslation;
-  const countAyat = dataSurah.numberOfAyahs;
+QuranDetail.navigationOptions = ({ navigation }) => {
+  // console.log('navigation',navigation.state.params.headerTitle);
+  const customHeaderComponent = get(
+    navigation,
+    'state.params.customHeaderComponent',
+  );
+
   return {
-    headerTitle: (
-      <HeaderSurahDetail
-        suratName={suratName}
-        suratArabic={suratArabic}
-        suratTranslate={suratTranslate}
-        countAyat={countAyat}
-      />
-    ),
+    headerTitle: customHeaderComponent,
   };
 };
+
+// QuranDetail.navigationOptions = ({
+//   navigation: {
+//     state: {
+//       params: { dataSurah },
+//     },
+//   },
+// }) => {
+//   // console.log('state', state);
+//   const suratName = dataSurah.englishName;
+//   const suratArabic = dataSurah.name;
+//   const suratTranslate = dataSurah.englishNameTranslation;
+//   const countAyat = dataSurah.numberOfAyahs;
+//   return {
+//     headerTitle: (
+//       <HeaderSurahDetail
+//         suratName={suratName}
+//         suratArabic={suratArabic}
+//         suratTranslate={suratTranslate}
+//         countAyat={countAyat}
+//         rightIcon1={
+//           <TouchableOpacity>
+//             <Icon name={'book-open-page-variant'} size={26} color="#93A8B3" />
+//           </TouchableOpacity>
+//         }
+//       />
+//     ),
+//   };
+// };
 
 //export const SurahDataContext = React.createContext(props.arabicData)
 // Reactotron.log('');
@@ -272,6 +376,12 @@ const Styles = StyleSheet.create({
     paddingVertical: 16,
     paddingHorizontal: 20,
     alignItems: 'center',
+    justifyContent: 'space-between',
+  },
+  nameIconWrapper: {
+    flexDirection:'row',
+    alignItems:'center',
+    justifyContent:'flex-start'
   },
   bsItemText: {
     fontSize: 15,
@@ -282,6 +392,12 @@ const Styles = StyleSheet.create({
     textAlign: 'center',
     fontFamily: FontType.bold,
     paddingBottom: 20,
+  },
+  translationSelectContainer: {
+    borderColor: 'rgba(0,0,0,0.1)',
+    borderWidth: 1,
+    borderRadius: 8,
+    marginTop: 8,
   },
 });
 
