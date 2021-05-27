@@ -101,11 +101,15 @@ const AyahPlayer = (props) => {
           // console.log(array[rawLength + i]);
         }
         // console.log('eosArray : ', eosArray);
+        console.log('sending EOS');
         client.current.send(eosArray);
     }
 
     const delay = ms => new Promise(res => setTimeout(res, ms));
 
+    const connectServer = () => {
+        client.current = new W3CWebSocket('ws://104.248.153.153:8080/client/ws/speech')
+    }
     const sendDataToServer = async (path) => {
         // if(socketConnected){
         //     RNFS.stat("/storage/emulated/0/Download/2.wav")
@@ -119,32 +123,32 @@ const AyahPlayer = (props) => {
         //     })
             
         // }
-        if(!socketConnected){
-            console.log('client is not connected, connecting client');
-            client.current = new W3CWebSocket('ws://efd958205c5f.ngrok.io/client/ws/speech')
-            // client = new W3CWebSocket('ws://efd958205c5f.ngrok.io/client/ws/speech');
-            // console.log('client connection status : ', client.current.readyState );
-            await delay(5000);
-            console.log("Waited 5s");
-            // client.current.onerror = () => {
-            //     console.log(' Error');
-            //     setSocketConnected(false)
-            // };
+        // if(!socketConnected){
+        //     console.log('client is not connected, connecting client');
+        //     client.current = new W3CWebSocket('ws://104.248.153.153:8080/client/ws/speech')
+        //     // client = new W3CWebSocket('ws://efd958205c5f.ngrok.io/client/ws/speech');
+        //     // console.log('client connection status : ', client.current.readyState );
+        //     await delay(5000);
+        //     console.log("Waited 5s");
+        //     // client.current.onerror = () => {
+        //     //     console.log(' Error');
+        //     //     setSocketConnected(false)
+        //     // };
         
-            // client.current.onclose = () => {
-            //     console.log(' Closed');
-            //     setSocketConnected(false)
-            // };
-            // client.current.onopen = async () => {
-            //     console.log(' Connected');
+        //     // client.current.onclose = () => {
+        //     //     console.log(' Closed');
+        //     //     setSocketConnected(false)
+        //     // };
+        //     // client.current.onopen = async () => {
+        //     //     console.log(' Connected');
             
                 
                 
-            // };
+        //     // };
             
-        }
+        // }
         // RNFS.stat('/storage/emulated/0/Download/2.wav')
-        RNFS.stat(path)
+        await RNFS.stat(path)
         .then((data) => {
 
                 // console.log('path : ', path);
@@ -154,15 +158,15 @@ const AyahPlayer = (props) => {
 
         })
 
-        RNFS.readFile(path,'base64')
-        .then((data) => {
+        await RNFS.readFile(path,'base64')
+        .then(async (data) => {
             const convertedData = convertBase64ToBinary(data)
             console.log('converted data : ', convertedData);
             // console.log('client connection status : ', client.current.readyState );
             
                 if(client.current.readyState === client.current.OPEN){
                     console.log('client is connected, sending data to server',client.current.readyState);
-                    client.current.send(convertedData)
+                    await client.current.send(convertedData)
                     // sendEOF()
                     setFetchingResponse(true)
                     setSocketResponse([])
@@ -491,7 +495,9 @@ const AyahPlayer = (props) => {
     //load sound recorder and record sound
     const recordAyah = () => {
 
-
+        // create websocket with server
+        connectServer();
+        // start recording
         SoundRecorder.start(SoundRecorder.PATH_CACHE + '/test.wav')
             .then(function () {
                 setIsRecording(true)
@@ -502,13 +508,17 @@ const AyahPlayer = (props) => {
 
 
     //stop sound recorder
-    const stopRecordAyah = () => {
+    const stopRecordAyah = async () => {
+        
         SoundRecorder.stop()
-            .then(function (result) {
+            .then(async (result) => {
                 setIsRecording(false)
                 setRecordedFile(result.path)
                 console.log('stopped recording, audio file saved at: ' + result.path);
-                sendDataToServer(result.path)
+                // send data to server through websocket
+                await sendDataToServer(result.path)
+                // send EOF to terminate websocket
+                sendEOF()
                 
             });
     }
@@ -578,6 +588,14 @@ const AyahPlayer = (props) => {
                 <View style={styles.resultContainer}>
                     {
                         socketResponse.length !== 0 && responseRecieved ? 
+                        <Text style={styles.responseText}>
+                                    {   socketResponse[socketResponse.length - 1].result ?
+                                        socketResponse[socketResponse.length - 1].result.hypotheses[0].transcript
+                                        :
+                                        null
+                                    }
+                        </Text>
+                        /* 
                         socketResponse.map((item,index) => {
                             return(
                                 <Text style={styles.responseText} key={index}>
@@ -589,6 +607,7 @@ const AyahPlayer = (props) => {
                                 </Text>
                             )
                         })
+                         */
                         : 
                         <Text>
                             {
