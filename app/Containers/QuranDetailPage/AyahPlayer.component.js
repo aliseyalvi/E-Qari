@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useContext } from 'react';
+import React, { useEffect, useState, useContext,useRef } from 'react';
 import {
     View,
     Text,
@@ -27,6 +27,20 @@ import SoundRecorder from 'react-native-sound-recorder';
 //import reactotron
 import Reactotron from 'reactotron-react-native'
 
+import { w3cwebsocket as W3CWebSocket } from "websocket";
+// var client = new W3CWebSocket('ws://efd958205c5f.ngrok.io/client/ws/speech');
+// const client = new W3CWebSocket('wss://echo.websocket.org/');
+
+import ReconnectingWebSocket from 'reconnecting-websocket';
+const options = {
+    connectionTimeout: 1000,
+    maxRetries: 10,
+};
+const rws = new ReconnectingWebSocket('ws://efd958205c5f.ngrok.io/client/ws/speech', [], options);
+var RNFS = require('react-native-fs');
+var atob = require('atob')
+
+
 const HEIGHT = Dimensions.get('window').height
 //sound instant variable
 var sound1
@@ -38,26 +52,381 @@ const AyahPlayer = (props) => {
         forwardRef,
         ayahData
     } = props
-    Reactotron.log('ayah data in player modal ', ayahData)
-
+    // const client = useRef(new W3CWebSocket('ws://efd958205c5f.ngrok.io/client/ws/speech'))
+    const client = useRef(null)
     const { ayahs, selectedAyahData } = useContext(SurahDataContext)
     //destructure surahdata context
     //const surahData =  useContext(SurahDataContext)
     //Reactotron.log('surah data in player modal',surahData )
     const [selectedAyah, setSelectedAyah] = useState(null)
     Reactotron.log('selected ayah in player modal', selectedAyahData)
-    const [recordFile, setRecordFile] = useState('')
+    const [recordedFilePath, setRecordedFile] = useState('')
     const [isPlayClicked, setIsPlayClicked] = useState(false)
     const [isPlaying, setIsPlaying] = useState(false)
     const [isRecording, setIsRecording] = useState(false)
 
     const [permissionStatus, setPermissionStatus] = useState(false)
+    const [socketOPened, setSocketOPened] = useState(false)
+    const [socketConnected, setSocketConnected] = useState(false)
+
+    const [socketResponse, setSocketResponse] = useState([])
+    const [responseRecieved, setResponseRecieved] = useState(false)
+    const [fetchingResponse, setFetchingResponse] = useState(false)
     //set selected ayah stat based on context
     useEffect(() => {
         setSelectedAyah(selectedAyahData)
         _requestRecordAudioPermission()
     }, [selectedAyahData])
 
+  
+    const convertBase64ToBinary = (base64) => {
+
+        var raw = atob(base64);
+        var rawLength = raw.length;
+        var array = new Uint8Array(new ArrayBuffer(rawLength));
+      
+        for(let i = 0; i < rawLength; i++) {
+          array[i] = raw.charCodeAt(i);
+        }
+        return array;
+    }
+    
+    const sendEOF = () => {
+        let eos = "EOS"
+        let eosLength = eos.length
+        let eosArray = new Uint8Array(3);
+        for(let i = 0  ; i < eosLength; i++) {
+          // console.log(eos.charCodeAt(i));
+          eosArray[i] = eos.charCodeAt(i);
+          // console.log(array[rawLength + i]);
+        }
+        // console.log('eosArray : ', eosArray);
+        client.current.send(eosArray);
+    }
+
+    const delay = ms => new Promise(res => setTimeout(res, ms));
+
+    const sendDataToServer = async (path) => {
+        // if(socketConnected){
+        //     RNFS.stat("/storage/emulated/0/Download/2.wav")
+        //     .then((data) => {
+
+        //         // console.log('path : ', path);
+        //         console.log('data : ', data);
+        //         // socket.send(data);
+        //         // setSocketOPened((prevState)=> !prevState)
+
+        //     })
+            
+        // }
+        if(!socketConnected){
+            console.log('client is not connected, connecting client');
+            client.current = new W3CWebSocket('ws://efd958205c5f.ngrok.io/client/ws/speech')
+            // client = new W3CWebSocket('ws://efd958205c5f.ngrok.io/client/ws/speech');
+            // console.log('client connection status : ', client.current.readyState );
+            await delay(5000);
+            console.log("Waited 5s");
+            // client.current.onerror = () => {
+            //     console.log(' Error');
+            //     setSocketConnected(false)
+            // };
+        
+            // client.current.onclose = () => {
+            //     console.log(' Closed');
+            //     setSocketConnected(false)
+            // };
+            // client.current.onopen = async () => {
+            //     console.log(' Connected');
+            
+                
+                
+            // };
+            
+        }
+        // RNFS.stat('/storage/emulated/0/Download/2.wav')
+        RNFS.stat(path)
+        .then((data) => {
+
+                // console.log('path : ', path);
+                console.log('data : ', data);
+                // socket.send(data);
+                // setSocketOPened((prevState)=> !prevState)
+
+        })
+
+        RNFS.readFile(path,'base64')
+        .then((data) => {
+            const convertedData = convertBase64ToBinary(data)
+            console.log('converted data : ', convertedData);
+            // console.log('client connection status : ', client.current.readyState );
+            
+                if(client.current.readyState === client.current.OPEN){
+                    console.log('client is connected, sending data to server',client.current.readyState);
+                    client.current.send(convertedData)
+                    // sendEOF()
+                    setFetchingResponse(true)
+                    setSocketResponse([])
+                    setSocketConnected(true)
+                }
+                else{
+                    console.log('client is not connected, try again!');
+                    setFetchingResponse(false)
+                }
+                
+                
+                // client.current.onmessage = ({data}) => {
+                //     // const dataFromServer = JSON.parse(data)
+                //     // console.log( 'data recieved : ', dataFromServer)
+                //     console.log('data recieved : ',JSON.parse(data));
+                //     setSocketResponse((prevState) => [...prevState, JSON.parse(data)])
+                // }
+            
+           
+            
+        })
+
+        // RNFS.readFile('/storage/emulated/0/Download/2.wav','base64')
+        // RNFS.readFile(path,'base64')
+        // .then((data) => {
+        //     const convertedData = convertBase64ToBinary(data)
+        //     console.log('converted data : ', convertedData);
+        //     // console.log('client connection status : ', client.current.readyState );
+            
+        //         if(client.current.readyState === client.current.OPEN){
+        //             console.log('client is connected, sending data to server',client.current.readyState);
+        //             client.current.send(convertedData)
+        //             sendEOF()
+        //             setSocketResponse([])
+        //         }
+        //         else{
+        //             console.log('client is not connected, try again!');
+        //         }
+                
+                
+        //         // client.current.onmessage = ({data}) => {
+        //         //     // const dataFromServer = JSON.parse(data)
+        //         //     // console.log( 'data recieved : ', dataFromServer)
+        //         //     console.log('data recieved : ',JSON.parse(data));
+        //         //     setSocketResponse((prevState) => [...prevState, JSON.parse(data)])
+        //         // }
+            
+           
+            
+        // })
+
+      
+
+        // client.send(JSON.stringify({
+        //     type: 'message',
+        //     msg: path
+        // }))
+    }
+
+    /* client.current.onerror = () => {
+        console.log('Connection Error');
+        setSocketConnected(false)
+    };
+
+    client.current.onclose = () => {
+        console.log('Client Connection Closed');
+        setSocketConnected(false)
+    };
+
+    client.current.onopen = () => {
+        console.log('WebSocket Client Connected');
+        setSocketConnected(true)
+    };
+    client.current.onmessage = ({data}) => {
+        // const dataFromServer = JSON.parse(data)
+        // console.log( 'data recieved : ', dataFromServer)
+        console.log('data recieved : ',JSON.parse(data));
+        setSocketResponse((prevState) => [...prevState, JSON.parse(data)])
+    } */
+    useEffect(()=> {
+        // console.log('client socket status: ', client.current.readyState);
+        console.log('client : ', client);
+        if(client.current){
+            client.current.onmessage = ({data}) => {
+                // const dataFromServer = JSON.parse(data)
+                // console.log( 'data recieved : ', dataFromServer)
+                console.log('parsedData recieved : ',JSON.parse(data));
+                let parsedData = JSON.parse(data)
+                // console.log('parsedData:',parsedData);
+                console.log( " parsedData.hasOwnProperty('result') :", parsedData.hasOwnProperty('result'));
+                console.log(" parsedData.result.hypotheses :", parsedData.hasOwnProperty('result') ? parsedData.result.hypotheses : 'no-hypotheses');
+                if(parsedData && parsedData.hasOwnProperty('result')  ){
+                    setFetchingResponse(false)
+                    setResponseRecieved(true)
+                    setSocketResponse((prevState) => [...prevState, parsedData])
+                    
+                }else{
+                    setFetchingResponse(false)
+                    setResponseRecieved(false)
+                    setSocketResponse([])
+                }
+                
+            }
+            client.current.onerror = () => {
+                console.log('WebSocket Client Error');
+                setFetchingResponse(false)
+                setSocketConnected(false)
+            };
+        
+            client.current.onclose = () => {
+                console.log('WebSocket Client Closed');
+                setFetchingResponse(false)
+                setSocketConnected(false)
+            };
+        
+            client.current.onopen = () => {
+                console.log('WebSocket Client Connected');
+                setFetchingResponse(false)
+                setSocketConnected(true)
+            };
+        }
+        /* 
+        const intervalId = setInterval(() => {
+            console.log('inside interval status : ', client.current ? client.current.readyState: 'no-state' );
+            // if(client.current?.readyState === client.current?.OPEN){
+            //     setSocketConnected(true)
+            // }
+            // if(client.current?.readyState === client.current?.CLOSING){
+            //     setSocketConnected(false)
+            // }
+            // if(client.current?.readyState === client.current?.CLOSED){
+            //     setSocketConnected(false)
+            // }
+            
+            if(client.current){
+
+                client.current.onmessage = ({data}) => {
+                    // const dataFromServer = JSON.parse(data)
+                    // console.log( 'data recieved : ', dataFromServer)
+                    console.log('parsedData recieved : ',JSON.parse(data));
+                    let parsedData = JSON.parse(data)
+                    // console.log('parsedData:',parsedData);
+                    console.log( " parsedData.hasOwnProperty('result') :", parsedData.hasOwnProperty('result'));
+                    console.log(" parsedData.result.hypotheses :", parsedData.hasOwnProperty('result') ? parsedData.result.hypotheses : 'no-hypotheses');
+                    if(parsedData && parsedData.hasOwnProperty('result')  ){
+                        setSocketResponse((prevState) => [...prevState, parsedData])
+                    }else{
+                        setSocketResponse([])
+                    }
+                    
+                }
+                client.current.onerror = () => {
+                    console.log('WebSocket Client Error');
+                    setSocketConnected(false)
+                };
+            
+                client.current.onclose = () => {
+                    console.log('WebSocket Client Closed');
+                    setSocketConnected(false)
+                };
+            
+                client.current.onopen = () => {
+                    console.log('WebSocket Client Connected');
+                    setSocketConnected(true)
+                };
+            }
+          }, 1000 * 5) // in milliseconds
+          return () => clearInterval(intervalId)
+         */
+    })
+
+
+/* 
+    useEffect(()=>{
+        
+        socket.onopen = function() {
+            console.log('WebSocket Client Connected');
+            setSocketConnected(true)
+            
+              
+        };
+
+        if(socketConnected){
+            RNFS.readFile("/storage/emulated/0/Download/2.wav", 'base64')
+            .then((data) => {
+                console.log('data : ', data);
+                socket.send(data);
+                // setSocketOPened((prevState)=> !prevState)
+            })
+            
+        }
+
+        
+ 
+        
+    },[])
+*/
+    
+/* 
+    useEffect(()=> {
+        
+
+        client.onerror = function() {
+            console.log('Connection Error');
+            RNFS.readFile('./2.wav', 'base64')
+            .then((data) => {
+                client.send(data);
+            })
+
+
+        };
+
+        client.onopen = function() {
+            console.log('WebSocket Client Connected');
+            RNFS.readFile('./2.wav', 'base64')
+            .then((data) => {
+                client.send(data);
+            })
+            // let data = '1'
+            // client.send(data);
+            // if(recordedFilePath){
+            //     RNFS.readFile(recordedFilePath, 'base64')
+            //     .then((data) => {
+            //         client.send(data);
+            //     })
+            // }
+            
+        };
+
+        client.onmessage = function(e) {
+            if (typeof e.data === 'string') {
+                console.log("Received: '" + e.data + "'");
+            }
+        };
+        
+
+    })
+ */
+
+    const sendDataToWebsocket = () => {
+
+        client.onerror = function() {
+            console.log('Connection Error');
+        };
+        client.onopen = function() {
+            console.log('WebSocket Client Connected');
+        
+            function sendNumber() {
+                if (client.readyState === client.OPEN) {
+                    var number = Math.round(Math.random() * 0xFFFFFF);
+                    client.send(number.toString());
+                    setTimeout(sendNumber, 1000);
+                }
+            }
+            sendNumber();
+        };
+
+        client.onmessage = function(e) {
+            if (typeof e.data === 'string') {
+                console.log("Received: '" + e.data + "'");
+            }
+        };
+
+    }
 
     //handle play next button
     const handleNext = () => {
@@ -123,7 +492,7 @@ const AyahPlayer = (props) => {
     const recordAyah = () => {
 
 
-        SoundRecorder.start(SoundRecorder.PATH_CACHE + '/test.mp4')
+        SoundRecorder.start(SoundRecorder.PATH_CACHE + '/test.wav')
             .then(function () {
                 setIsRecording(true)
                 console.log('started recording');
@@ -137,8 +506,10 @@ const AyahPlayer = (props) => {
         SoundRecorder.stop()
             .then(function (result) {
                 setIsRecording(false)
-                //setRecordFile(result.path)
+                setRecordedFile(result.path)
                 console.log('stopped recording, audio file saved at: ' + result.path);
+                sendDataToServer(result.path)
+                
             });
     }
 
@@ -203,6 +574,34 @@ const AyahPlayer = (props) => {
     //modal footer component
     const _renderModalFooter = () => {
         return (
+            <View style={styles.modalFooterContainer}>
+                <View style={styles.resultContainer}>
+                    {
+                        socketResponse.length !== 0 && responseRecieved ? 
+                        socketResponse.map((item,index) => {
+                            return(
+                                <Text style={styles.responseText} key={index}>
+                                    {   item.result ?
+                                        item.result.hypotheses[0].transcript
+                                        :
+                                        null
+                                    }
+                                </Text>
+                            )
+                        })
+                        : 
+                        <Text>
+                            {
+                                fetchingResponse ? 
+                                'Fetching Response'
+                                :
+                                'No Response Recieved'
+                            }
+                            
+                        </Text>
+                    }
+                </View>
+
             <View style={styles.playRecordContainer}>
 
                 {
@@ -285,9 +684,13 @@ const AyahPlayer = (props) => {
                 }
 
             </View>
+            
+            </View>
         )
     }
 
+    console.log('socketConnected : ',socketConnected);
+    console.log('socketResponse', socketResponse.length !=0  ? socketResponse[0].result ? socketResponse[0].result.hypotheses[0].transcript : 'no response!' : 'response empty!' );
     //return modalize component
     return (
         <Modalize
@@ -296,13 +699,18 @@ const AyahPlayer = (props) => {
             modalStyle={{ padding: 12 }}
             HeaderComponent={_renderModalHeader}
             FooterComponent={_renderModalFooter}
-            onClose={stopAyah}
+            onClose={()=> {
+                stopAyah();
+                setSocketResponse([])
+            }}
+            childrenStyle={styles.mainContainer}
         >
-
-            <View style={styles.coverContainer}>
-                <Text style={styles.descTextRight}>{selectedAyah ? selectedAyah.text : ''}</Text>
-            </View>
-
+            
+                <View style={styles.coverContainer}>
+                    <Text style={styles.descTextRight}>{selectedAyah ? selectedAyah.text : ''}</Text>
+                </View>
+                
+            
 
         </Modalize>
 
@@ -315,6 +723,9 @@ const styles = StyleSheet.create({
     borderRed: {
         borderWidth: 1,
         borderColor: 'red'
+    },
+    mainContainer:{
+        flex:1,
     },
     container: {
         flex: 1,
@@ -367,6 +778,19 @@ const styles = StyleSheet.create({
     timeStamp: {
         fontSize: 11,
         fontWeight: "500"
+    },
+    modalFooterContainer:{
+        height: 200,
+    },
+    resultContainer:{
+        height:100,
+        justifyContent: 'flex-start',
+        alignItems: 'center',
+    },
+    responseText:{
+        fontFamily: FontType.aaQamri,
+        color: 'rgba(18, 140, 126,1)',
+        fontSize: 22,
     },
     playRecordContainer: {
         flexDirection: 'row',
@@ -442,6 +866,7 @@ const styles = StyleSheet.create({
         letterSpacing: 15,
         color: 'rgba(18, 140, 126,1)'
     },
+    
     textNumber: {
         color: Colors.grey,
         fontSize: 13,
