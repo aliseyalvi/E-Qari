@@ -68,7 +68,6 @@ const getQuranTextAudioTranslationDefault = payload => async dispatch => {
 
   // destructure payload parameters
   const { surahId, countAyat } = payload;
-  console.log('surahId : ', surahId);
   try {
     const response = await axios.get(
       quranArabicAudioTranslationEndpoint(surahId),
