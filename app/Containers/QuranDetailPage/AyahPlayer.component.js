@@ -24,8 +24,8 @@ import SurahDataContext from './SurahDataContext';
 import Sound from 'react-native-sound';
 //import sound recorder component
 import SoundRecorder from 'react-native-sound-recorder';
-//import reactotron
-import Reactotron from 'reactotron-react-native';
+
+import { StringUtils } from 'turbocommons-ts';
 
 // import w3cwebsocket
 import { w3cwebsocket as W3CWebSocket } from 'websocket';
@@ -34,8 +34,8 @@ import { w3cwebsocket as W3CWebSocket } from 'websocket';
 var RNFS = require('react-native-fs');
 // import atob for conversion of base64 data
 var atob = require('atob');
-var Buffer = require('buffer/').Buffer  // 
-var base64js = require('base64-js')
+var Buffer = require('buffer/').Buffer; //
+var base64js = require('base64-js');
 
 const HEIGHT = Dimensions.get('window').height;
 //sound instant variable
@@ -50,7 +50,6 @@ const AyahPlayer = props => {
   //const surahData =  useContext(SurahDataContext)
   //Reactotron.log('surah data in player modal',surahData )
   const [selectedAyah, setSelectedAyah] = useState(null);
-  Reactotron.log('selected ayah in player modal', selectedAyahData);
   const [recordedFilePath, setRecordedFile] = useState('');
   const [isPlayClicked, setIsPlayClicked] = useState(false);
   const [isPlaying, setIsPlaying] = useState(false);
@@ -69,6 +68,20 @@ const AyahPlayer = props => {
     _requestRecordAudioPermission();
   }, [selectedAyahData]);
 
+  // get accuracy of fetchedResponse in percentage
+  const getPercentAccuracy = fetchedText => {
+    // console.log('original Text : ', selectedAyah.text);
+    const originalText = selectedAyah ? selectedAyah.text : '';
+    // console.log(
+    //   'fetchedText : ',
+    //   typeof fetchedText,
+    //   ' originalText : ',
+    //   typeof originalText,
+    // );
+    let percentAccuracy = StringUtils.compareSimilarityPercent(fetchedText,originalText)
+    return `${Math.round(percentAccuracy)} %` 
+  };
+  // convert base64 data to raw binary
   const convertBase64ToBinary = base64 => {
     var raw = atob(base64);
     var rawLength = raw.length;
@@ -80,6 +93,7 @@ const AyahPlayer = props => {
     return array;
   };
 
+  // send EOF character to terminate websocket connection
   const sendEOF = () => {
     let eos = 'EOS';
     let eosLength = eos.length;
@@ -94,13 +108,17 @@ const AyahPlayer = props => {
     client.current.send(eosArray);
   };
 
+  // generate delay for required time
   const delay = ms => new Promise(res => setTimeout(res, ms));
 
+  // connect client with webserver
   const connectServer = () => {
     client.current = new W3CWebSocket(
       'ws://104.248.153.153:8080/client/ws/speech',
     );
   };
+
+  // send data to webserver by reading recorded file
   const sendDataToServer = async path => {
     // RNFS.stat('/storage/emulated/0/Download/2.wav')
     // get details of recorded file using file system
@@ -244,7 +262,6 @@ const AyahPlayer = props => {
   const handleNext = () => {
     const currAyah = selectedAyah ? selectedAyah.number : 1;
     const nextAyah = ayahs.find(o => o.number == currAyah + 1);
-    Reactotron.log('next ayah is :', nextAyah);
     if (nextAyah) {
       setSelectedAyah(nextAyah);
     }
@@ -253,7 +270,6 @@ const AyahPlayer = props => {
   const handlePrev = () => {
     const currAyah = selectedAyah ? selectedAyah.number : 1;
     const prevAyah = ayahs.find(o => o.number == currAyah - 1);
-    Reactotron.log('prev ayah is :', prevAyah);
     if (prevAyah) {
       setSelectedAyah(prevAyah);
     }
@@ -310,7 +326,7 @@ const AyahPlayer = props => {
   const recordAyah = () => {
     // create websocket with server
     console.log('recording started');
-    
+
     connectServer();
     // start recording
     SoundRecorder.start(SoundRecorder.PATH_CACHE + '/test.wav').then(
@@ -395,12 +411,27 @@ const AyahPlayer = props => {
       <View style={styles.modalFooterContainer}>
         <View style={styles.resultContainer}>
           {socketResponse.length !== 0 && responseRecieved ? (
-            <Text style={styles.responseText}>
-              {socketResponse[socketResponse.length - 1].result
-                ? socketResponse[socketResponse.length - 1].result.hypotheses[0]
-                    .transcript
-                : null}
-            </Text>
+            <View style={styles.responseContainer}>
+              {socketResponse[socketResponse.length - 1].result ? (
+                <>
+                  <Text style={styles.responseText}>
+                    {
+                      // print the last fetched response from response array
+                      socketResponse[socketResponse.length - 1].result
+                        .hypotheses[0].transcript
+                    }
+                  </Text>
+                  <Text>
+                    Accuracy :{' '}
+                    {/* passt the last fetched response from response array into getPercentAccuracy() function */}
+                    {getPercentAccuracy(
+                      socketResponse[socketResponse.length - 1].result
+                        .hypotheses[0].transcript,
+                    )}
+                  </Text>
+                </>
+              ) : null}
+            </View>
           ) : (
             /* 
                         socketResponse.map((item,index) => {
@@ -423,10 +454,10 @@ const AyahPlayer = props => {
                     : 'Fetching Response'
                   : 'Please try again!'
                 : 'Tap to Speak'} */}
-                {socketConnected
-                  ? fetchingResponse
-                    ? 'Fetching Response'
-                    : 'Connecting!'
+              {socketConnected
+                ? fetchingResponse
+                  ? 'Fetching Response'
+                  : 'Connecting!'
                 : 'Tap to Speak'}
             </Text>
           )}
@@ -609,10 +640,16 @@ const styles = StyleSheet.create({
     justifyContent: 'flex-start',
     alignItems: 'center',
   },
+  responseContainer: {
+    justifyContent:'center',
+    alignItems:'center'
+  },
   responseText: {
-    fontFamily: FontType.aaQamri,
+    // fontFamily: FontType.aaQamri,
+    fontFamily: FontType.pdms,
     color: 'rgba(18, 140, 126,1)',
     fontSize: 22,
+    letterSpacing: 10,
   },
   playRecordContainer: {
     flexDirection: 'row',
@@ -682,7 +719,8 @@ const styles = StyleSheet.create({
     paddingTop: 10,
     paddingRight: 10,
     fontSize: 36,
-    fontFamily: FontType.aaQamri,
+    // fontFamily: FontType.aaQamri,
+    fontFamily: FontType.pdms,
     lineHeight: 70,
     letterSpacing: 15,
     color: 'rgba(18, 140, 126,1)',
