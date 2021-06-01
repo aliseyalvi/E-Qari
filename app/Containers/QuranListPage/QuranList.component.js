@@ -46,7 +46,7 @@ function QuranList(props) {
 
   const renderCardContent = ({ item }) => {
     // for now show only 1st and 112th Surah, just for testing
-    if (item?.number == 1 || item?.number == 112) {
+    if (item?.number == 1 ) {
       return (
         <CardSurahList
           surahNumber={item?.number}

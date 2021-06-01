@@ -17,7 +17,7 @@ import {
 import { Modalize } from 'react-native-modalize';
 import { Colors } from '../../Themes/Colors';
 import { FontType } from '../../Themes/Fonts';
-import Icon from 'react-native-vector-icons/FontAwesome';
+import Icon from 'react-native-vector-icons/Ionicons';
 //import SurahDataContext from QuranDetail.component
 import SurahDataContext from './SurahDataContext';
 // import Sound Component
@@ -65,10 +65,13 @@ const AyahPlayer = props => {
   const [socketResponse, setSocketResponse] = useState([]);
   const [responseRecieved, setResponseRecieved] = useState(false);
   const [fetchingResponse, setFetchingResponse] = useState(false);
+  // const [percentAccuracy, setPercentAccuracy] = useState('')
+  const percentAccuracy = useRef(0);
   //set selected ayah stat based on context
   useEffect(() => {
     // set selected ayah when selectedAyah is changed by forward or next or mounting time
     setSelectedAyah(selectedAyahData);
+    percentAccuracy.current = 0
     _requestRecordAudioPermission();
   }, [selectedAyahData]);
 
@@ -86,6 +89,10 @@ const AyahPlayer = props => {
   const _renderDiffText = fetchedText => {
     const diffText = getDifference(fetchedText);
     console.log('_renderDiffText :', diffText);
+    // calculate percentage accuracy and set in state
+    percentAccuracy.current = getPercentAccuracy(fetchedText)
+    console.log('percentAccuracy.current : ', percentAccuracy.current);
+    // setPercentAccuracy(getPercentAccuracy(fetchedText))
     if (diffText && diffText.length != 0) {
       return diffText.map((item, index) => (
         <Text key={index} style={{ color: item.removed ? 'red' : 'green' }}>
@@ -106,7 +113,7 @@ const AyahPlayer = props => {
       fetchedText,
       originalText,
     );
-    return `${Math.round(percentAccuracy)} %`;
+    return Math.round(percentAccuracy);
   };
   // convert base64 data to raw binary
   const convertBase64ToBinary = base64 => {
@@ -276,6 +283,7 @@ const AyahPlayer = props => {
       setSelectedAyah(nextAyah);
       // set socketResponse to empty when ayah is changed,
       setSocketResponse([]);
+      percentAccuracy.current = 0
     }
   };
   //handle play prev button
@@ -286,6 +294,7 @@ const AyahPlayer = props => {
       setSelectedAyah(prevAyah);
       // set socketResponse to empty when ayah is changed,
       setSocketResponse([]);
+      percentAccuracy.current = 0
     }
   };
 
@@ -399,21 +408,24 @@ const AyahPlayer = props => {
   };
 
   //modal header component
+  const arabicAyahSymbol  = "\u06DD";
   const _renderModalHeader = () => {
     return (
       <View style={styles.forwardBackContainer}>
         <TouchableOpacity onPress={handlePrev}>
-          <Icon name={'backward'} size={26} color="#93A8B3" />
+          <Icon name={'chevron-back'} size={26} color="#93A8B3" />
         </TouchableOpacity>
 
+        
         <View style={styles.NumberCircle}>
-          <Text style={styles.textNumber}>
-            {selectedAyah ? selectedAyah.numberInSurah : ''}
-          </Text>
-        </View>
+              <Text style={styles.textNumber}>{arabicAyahSymbol}</Text>
+              <Text style={styles.ayahNumber}>
+              {selectedAyah ? selectedAyah.numberInSurah : ''}
+              </Text>
+            </View>
 
         <TouchableOpacity onPress={handleNext}>
-          <Icon name="forward" size={26} color="#93A8B3" />
+          <Icon name="chevron-forward" size={26} color="#93A8B3" />
         </TouchableOpacity>
       </View>
     );
@@ -424,33 +436,22 @@ const AyahPlayer = props => {
     return (
       <View style={styles.modalFooterContainer}>
         <View style={styles.resultContainer}>
-          {socketResponse.length !== 0 && responseRecieved ? (
-            <View style={styles.responseContainer}>
-              {socketResponse[socketResponse.length - 1].result ? (
-                <>
-                  <Text style={styles.responseText}>
-                    {/* {
-                      // print the last fetched response from response array
-                      socketResponse[socketResponse.length - 1].result
-                        .hypotheses[0].transcript
-                    } */}
-                    {_renderDiffText(
-                      socketResponse[socketResponse.length - 1].result
-                        .hypotheses[0].transcript,
-                    )}
-                  </Text>
-                  <Text>
-                    Accuracy :{' '}
-                    {/* pass the last fetched response from response array into getPercentAccuracy() function */}
-                    {getPercentAccuracy(
-                      socketResponse[socketResponse.length - 1].result
-                        .hypotheses[0].transcript,
-                    )}
-                  </Text>
-                </>
-              ) : null}
+          {
+            percentAccuracy.current ? 
+            <View style={styles.accuracyContainer}>
+            <Text style={percentAccuracy.current > 90 ? styles.accuracyTextGreen : styles.accuracyTextRed}>
+              Accuracy : {percentAccuracy.current} %
+            </Text>
+            {
+               percentAccuracy.current > 90 ? 
+               <Icon style={{marginLeft:8}} name={ "checkmark-circle-outline" } size={20} color="green" />
+               :
+               <Icon style={{marginLeft:8}} name={"close-circle-outline"} size={20} color="red" />
+            }
+            
+            
             </View>
-          ) : (
+            :
             <Text>
               {socketConnected
                 ? fetchingResponse
@@ -458,7 +459,8 @@ const AyahPlayer = props => {
                   : 'Connecting!'
                 : 'Tap on Mic to Recite'}
             </Text>
-          )}
+          }
+        
         </View>
 
         <View style={styles.playRecordContainer}>
@@ -495,7 +497,7 @@ const AyahPlayer = props => {
               onPress={() => recordAyah()}
               disabled={isPlaying}>
               <Icon
-                name={'microphone'}
+                name={'mic'}
                 size={30}
                 color="#FFF"
                 style={styles.micIcon}
@@ -560,9 +562,37 @@ const AyahPlayer = props => {
       }}
       childrenStyle={styles.mainContainer}>
       <View style={styles.coverContainer}>
-        <Text style={styles.descTextRight}>
+        {/* <Text style={styles.descTextRight}>
+          {selectedAyah ? selectedAyah.text : ''}
+        </Text> */}
+        {socketResponse.length !== 0 && responseRecieved ? (
+            <View style={styles.responseContainer}>
+              {socketResponse[socketResponse.length - 1].result ? (
+                <>
+                  <Text style={styles.descTextRight}>
+                    {/* {
+                      // print the last fetched response from response array
+                      socketResponse[socketResponse.length - 1].result
+                        .hypotheses[0].transcript
+                    } */}
+                    {_renderDiffText(
+                      socketResponse[socketResponse.length - 1].result
+                        .hypotheses[0].transcript,
+                    )}
+                  </Text>
+                  <Text>
+                    
+                    {/* pass the last fetched response from response array into getPercentAccuracy() function */}
+                    
+                  </Text>
+                </>
+              ) : null}
+            </View>
+          ) : (
+            <Text style={styles.descTextRight}>
           {selectedAyah ? selectedAyah.text : ''}
         </Text>
+          )}
       </View>
     </Modalize>
   );
@@ -631,10 +661,10 @@ const styles = StyleSheet.create({
     fontWeight: '500',
   },
   modalFooterContainer: {
-    height: 200,
+    height: 170,
   },
   resultContainer: {
-    height: 100,
+    height: 70,
     justifyContent: 'flex-start',
     alignItems: 'center',
   },
@@ -695,7 +725,7 @@ const styles = StyleSheet.create({
     elevation: 4,
   },
   playIcon: {
-    marginLeft: 8,
+    // marginLeft: 8,
   },
   cancelIcon: {
     position: 'absolute',
@@ -724,19 +754,33 @@ const styles = StyleSheet.create({
     color: 'rgba(18, 140, 126,1)',
   },
 
-  textNumber: {
-    color: Colors.grey,
-    fontSize: 13,
-    fontFamily: FontType.semiBold,
-  },
   NumberCircle: {
-    height: 32,
-    width: 32,
-    borderRadius: 16,
-    borderColor: Colors.separator,
-    borderWidth: 2,
     backgroundColor: Colors.white,
     justifyContent: 'center',
     alignItems: 'center',
+    fontSize:20
   },
+  ayahNumber:{
+    position:'absolute',
+    fontFamily: FontType.jameelNoriReg,
+    fontSize:16
+  },
+  textNumber: {
+    color: Colors.grey,
+    fontSize: 22,
+    fontFamily: FontType.semiBold,
+  },
+  accuracyContainer:{
+    flexDirection:'row',
+    justifyContent:'space-between',
+    alignItems:'center'
+  },
+  accuracyTextGreen:{
+    color:'green',
+    fontSize:16
+  },
+  accuracyTextRed:{
+    color:'red',
+    fontSize:16
+  }
 });
