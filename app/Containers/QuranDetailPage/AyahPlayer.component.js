@@ -26,6 +26,7 @@ import Sound from 'react-native-sound';
 import SoundRecorder from 'react-native-sound-recorder';
 
 import { StringUtils } from 'turbocommons-ts';
+const Diff = require('diff');
 
 // import w3cwebsocket
 import { w3cwebsocket as W3CWebSocket } from 'websocket';
@@ -40,6 +41,8 @@ var base64js = require('base64-js');
 const HEIGHT = Dimensions.get('window').height;
 //sound instant variable
 var sound1;
+
+const WEB_SERVER_ADDRESS = 'ws://104.248.153.153:8080/client/ws/speech'
 
 const AyahPlayer = props => {
   const { forwardRef, ayahData } = props;
@@ -64,22 +67,46 @@ const AyahPlayer = props => {
   const [fetchingResponse, setFetchingResponse] = useState(false);
   //set selected ayah stat based on context
   useEffect(() => {
+    // set selected ayah when selectedAyah is changed by forward or next or mounting time
     setSelectedAyah(selectedAyahData);
     _requestRecordAudioPermission();
   }, [selectedAyahData]);
+
+  const getDifference = fetchedText => {
+    const originalText = selectedAyah ? selectedAyah.text : '';
+    const diff = Diff.diffWords(originalText, fetchedText);
+    console.log('diff: ', diff);
+    const diffText = diff.filter(
+      obj => obj.removed || !obj.added || (!obj.added && !obj.removed),
+    );
+    console.log('diffText : ', diffText);
+    return diffText;
+  };
+
+  const _renderDiffText = fetchedText => {
+    const diffText = getDifference(fetchedText);
+    console.log('_renderDiffText :', diffText);
+    if (diffText && diffText.length != 0) {
+      return diffText.map((item, index) => (
+        <Text key={index} style={{ color: item.removed ? 'red' : 'green' }}>
+          {item.value}
+        </Text>
+      ));
+    } else {
+      return null;
+    }
+  };
 
   // get accuracy of fetchedResponse in percentage
   const getPercentAccuracy = fetchedText => {
     // console.log('original Text : ', selectedAyah.text);
     const originalText = selectedAyah ? selectedAyah.text : '';
-    // console.log(
-    //   'fetchedText : ',
-    //   typeof fetchedText,
-    //   ' originalText : ',
-    //   typeof originalText,
-    // );
-    let percentAccuracy = StringUtils.compareSimilarityPercent(fetchedText,originalText)
-    return `${Math.round(percentAccuracy)} %` 
+
+    let percentAccuracy = StringUtils.compareSimilarityPercent(
+      fetchedText,
+      originalText,
+    );
+    return `${Math.round(percentAccuracy)} %`;
   };
   // convert base64 data to raw binary
   const convertBase64ToBinary = base64 => {
@@ -113,39 +140,32 @@ const AyahPlayer = props => {
 
   // connect client with webserver
   const connectServer = () => {
-    client.current = new W3CWebSocket(
-      'ws://104.248.153.153:8080/client/ws/speech',
-    );
+    client.current = new W3CWebSocket(WEB_SERVER_ADDRESS);
   };
 
   // send data to webserver by reading recorded file
   const sendDataToServer = async path => {
-    // RNFS.stat('/storage/emulated/0/Download/2.wav')
+
     // get details of recorded file using file system
     await RNFS.stat(path).then(data => {
-      // console.log('path : ', path);
       console.log('data : ', data);
-      // socket.send(data);
-      // setSocketOPened((prevState)=> !prevState)
     });
+
 
     // read recorded file using file system
     await RNFS.readFile(path, 'base64').then(async data => {
-      // convert base64 data to raw binary
-      // const convertedData = convertBase64ToBinary(data);
-      // console.log('converted data : ', convertedData);
-      // console.log('client connection status : ', client.current.readyState );
-
+  
       //   if connection is opened send data to server
       if (client.current.readyState === client.current.OPEN) {
         console.log(
           'client is connected, sending data to server',
           client.current.readyState,
         );
-        // await client.current.send(convertedData);
+        
+        // convert base64 data to raw binary
         console.log('converted data : ', base64js.toByteArray(data));
         await client.current.send(base64js.toByteArray(data));
-        // sendEOF()
+        
         setSocketConnected(true);
         setFetchingResponse(true);
         setSocketResponse([]);
@@ -165,16 +185,6 @@ const AyahPlayer = props => {
         let parsedData = JSON.parse(data);
         console.log('parsedData:', parsedData);
 
-        // console.log(
-        //   " parsedData.hasOwnProperty('result') :",
-        //   parsedData.hasOwnProperty('result'),
-        // );
-        // console.log(
-        //   ' parsedData.result.hypotheses :',
-        //   parsedData.hasOwnProperty('result')
-        //     ? parsedData.result.hypotheses
-        //     : 'no-hypotheses',
-        // );
 
         // if data recieved is valid and has result parameter, load it into state else set response state to empty
         if (parsedData && parsedData.hasOwnProperty('result')) {
@@ -264,6 +274,8 @@ const AyahPlayer = props => {
     const nextAyah = ayahs.find(o => o.number == currAyah + 1);
     if (nextAyah) {
       setSelectedAyah(nextAyah);
+      // set socketResponse to empty when ayah is changed,
+      setSocketResponse([]);
     }
   };
   //handle play prev button
@@ -272,6 +284,8 @@ const AyahPlayer = props => {
     const prevAyah = ayahs.find(o => o.number == currAyah - 1);
     if (prevAyah) {
       setSelectedAyah(prevAyah);
+      // set socketResponse to empty when ayah is changed,
+      setSocketResponse([]);
     }
   };
 
@@ -415,15 +429,19 @@ const AyahPlayer = props => {
               {socketResponse[socketResponse.length - 1].result ? (
                 <>
                   <Text style={styles.responseText}>
-                    {
+                    {/* {
                       // print the last fetched response from response array
                       socketResponse[socketResponse.length - 1].result
                         .hypotheses[0].transcript
-                    }
+                    } */}
+                    {_renderDiffText(
+                      socketResponse[socketResponse.length - 1].result
+                        .hypotheses[0].transcript,
+                    )}
                   </Text>
                   <Text>
                     Accuracy :{' '}
-                    {/* passt the last fetched response from response array into getPercentAccuracy() function */}
+                    {/* pass the last fetched response from response array into getPercentAccuracy() function */}
                     {getPercentAccuracy(
                       socketResponse[socketResponse.length - 1].result
                         .hypotheses[0].transcript,
@@ -433,32 +451,12 @@ const AyahPlayer = props => {
               ) : null}
             </View>
           ) : (
-            /* 
-                        socketResponse.map((item,index) => {
-                            return(
-                                <Text style={styles.responseText} key={index}>
-                                    {   item.result ?
-                                        item.result.hypotheses[0].transcript
-                                        :
-                                        null
-                                    }
-                                </Text>
-                            )
-                        })
-                         */
             <Text>
-              {/* {socketConnected
-                ? responseRecieved
-                  ? fetchingResponse
-                    ? 'Response Recieved'
-                    : 'Fetching Response'
-                  : 'Please try again!'
-                : 'Tap to Speak'} */}
               {socketConnected
                 ? fetchingResponse
                   ? 'Fetching Response'
                   : 'Connecting!'
-                : 'Tap to Speak'}
+                : 'Tap on Mic to Recite'}
             </Text>
           )}
         </View>
@@ -641,8 +639,8 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   responseContainer: {
-    justifyContent:'center',
-    alignItems:'center'
+    justifyContent: 'center',
+    alignItems: 'center',
   },
   responseText: {
     // fontFamily: FontType.aaQamri,

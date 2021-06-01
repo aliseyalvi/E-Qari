@@ -17,12 +17,12 @@ const Constants = {
   },
   LANGUAGE: {
     EN: 'en',
-    ID: 'id',
+    UR: 'ur',
   },
   LangLists: [
     {
-      title: 'Indonesia',
-      langId: 'id',
+      title: 'Urdu',
+      langId: 'ur',
     },
     {
       title: 'English',

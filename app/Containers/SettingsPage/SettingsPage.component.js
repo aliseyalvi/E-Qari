@@ -65,14 +65,15 @@ const SettingsPage = ({ navigation }) => {
   const GeneralSettings = [
     {
       title: I18n.t('FontType'),
-      description: 'LPMQ standard',
+      description: 'PDMS',
       // eslint-disable-next-line no-alert
       onPress: () => alert('Not Ready'),
     },
     {
       title: I18n.t('AppLanguage'),
-      description: language === 'id' ? I18n.t('Indonesian') : I18n.t('English'),
-      onPress: () => toggleModal('lang'),
+      description: language === 'ur' ? I18n.t('Urdu') : I18n.t('English'),
+      // onPress: () => toggleModal('lang'),
+      onPress: () => alert('Not Ready'),
     },
   ];
 
