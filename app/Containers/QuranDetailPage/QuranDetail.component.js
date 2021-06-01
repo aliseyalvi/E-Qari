@@ -131,7 +131,7 @@ function QuranDetail(props) {
   const renderDetailSurah = async () => {
     const surahId = get(navigation, 'state.params.dataSurah.number');
     const countAyat = get(navigation, 'state.params.dataSurah.numberOfAyahs');
-    console.log('surahId :', surahId , 'countAyat : ', countAyat);
+    console.log('surahId :', surahId , 'surahId type : ', typeof surahId ,'countAyat : ', countAyat);
     const payload = {
       surahId,
       countAyat,
@@ -312,7 +312,9 @@ function QuranDetail(props) {
   };
 
   console.log('selectedTranslation : ', selectedTranslation);
-
+  console.log('isLoading : ', isLoading);
+  console.log('arabicData : ', arabicData , 'arabicData.length: ', Object.keys(arabicData).length);
+  console.log('translationData : ', translationData, ' translationData.length : ', Object.keys(translationData).length);
   return isLoading ? (
     <Loading />
   ) : (

@@ -15,7 +15,7 @@ const getQuranList = () => async dispatch => {
   try {
     //const response = await axios.get(quranList);
     const response = surahList
-    console.log('surah list : ', surahList);
+    // console.log('surah list : ', surahList);
 /*     
     const response = require('./surah.json')
     //console.log('response in actions',response.data)

@@ -21,7 +21,7 @@
     "@react-native-community/netinfo": "^5.5.0",
     "@react-native-community/slider": "^3.0.3",
     "atob": "^2.1.2",
-    "axios": "^0.19.2",
+    "axios": "^0.21.1",
     "base64-js": "^1.5.1",
     "buffer": "^6.0.3",
     "diff": "^5.0.0",
