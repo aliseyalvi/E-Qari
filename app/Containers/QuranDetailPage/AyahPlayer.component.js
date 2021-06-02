@@ -42,7 +42,7 @@ const HEIGHT = Dimensions.get('window').height;
 //sound instant variable
 var sound1;
 
-const WEB_SERVER_ADDRESS = 'ws://104.248.153.153:8080/client/ws/speech'
+const WEB_SERVER_ADDRESS = 'ws://104.248.153.153:8080/client/ws/speech';
 
 const AyahPlayer = props => {
   const { forwardRef, ayahData } = props;
@@ -71,7 +71,7 @@ const AyahPlayer = props => {
   useEffect(() => {
     // set selected ayah when selectedAyah is changed by forward or next or mounting time
     setSelectedAyah(selectedAyahData);
-    percentAccuracy.current = 0
+    percentAccuracy.current = 0;
     _requestRecordAudioPermission();
   }, [selectedAyahData]);
 
@@ -90,7 +90,7 @@ const AyahPlayer = props => {
     const diffText = getDifference(fetchedText);
     console.log('_renderDiffText :', diffText);
     // calculate percentage accuracy and set in state
-    percentAccuracy.current = getPercentAccuracy(fetchedText)
+    percentAccuracy.current = getPercentAccuracy(fetchedText);
     console.log('percentAccuracy.current : ', percentAccuracy.current);
     // setPercentAccuracy(getPercentAccuracy(fetchedText))
     if (diffText && diffText.length != 0) {
@@ -152,27 +152,24 @@ const AyahPlayer = props => {
 
   // send data to webserver by reading recorded file
   const sendDataToServer = async path => {
-
     // get details of recorded file using file system
     await RNFS.stat(path).then(data => {
       console.log('data : ', data);
     });
 
-
     // read recorded file using file system
     await RNFS.readFile(path, 'base64').then(async data => {
-  
       //   if connection is opened send data to server
       if (client.current.readyState === client.current.OPEN) {
         console.log(
           'client is connected, sending data to server',
           client.current.readyState,
         );
-        
+
         // convert base64 data to raw binary
         console.log('converted data : ', base64js.toByteArray(data));
         await client.current.send(base64js.toByteArray(data));
-        
+
         setSocketConnected(true);
         setFetchingResponse(true);
         setSocketResponse([]);
@@ -191,7 +188,6 @@ const AyahPlayer = props => {
       client.current.onmessage = ({ data }) => {
         let parsedData = JSON.parse(data);
         console.log('parsedData:', parsedData);
-
 
         // if data recieved is valid and has result parameter, load it into state else set response state to empty
         if (parsedData && parsedData.hasOwnProperty('result')) {
@@ -283,7 +279,7 @@ const AyahPlayer = props => {
       setSelectedAyah(nextAyah);
       // set socketResponse to empty when ayah is changed,
       setSocketResponse([]);
-      percentAccuracy.current = 0
+      percentAccuracy.current = 0;
     }
   };
   //handle play prev button
@@ -294,7 +290,7 @@ const AyahPlayer = props => {
       setSelectedAyah(prevAyah);
       // set socketResponse to empty when ayah is changed,
       setSocketResponse([]);
-      percentAccuracy.current = 0
+      percentAccuracy.current = 0;
     }
   };
 
@@ -408,7 +404,7 @@ const AyahPlayer = props => {
   };
 
   //modal header component
-  const arabicAyahSymbol  = "\u06DD";
+  const arabicAyahSymbol = '\u06DD';
   const _renderModalHeader = () => {
     return (
       <View style={styles.forwardBackContainer}>
@@ -416,13 +412,12 @@ const AyahPlayer = props => {
           <Icon name={'chevron-back'} size={26} color="#93A8B3" />
         </TouchableOpacity>
 
-        
         <View style={styles.NumberCircle}>
-              <Text style={styles.textNumber}>{arabicAyahSymbol}</Text>
-              <Text style={styles.ayahNumber}>
-              {selectedAyah ? selectedAyah.numberInSurah : ''}
-              </Text>
-            </View>
+          <Text style={styles.textNumber}>{arabicAyahSymbol}</Text>
+          <Text style={styles.ayahNumber}>
+            {selectedAyah ? selectedAyah.numberInSurah : ''}
+          </Text>
+        </View>
 
         <TouchableOpacity onPress={handleNext}>
           <Icon name="chevron-forward" size={26} color="#93A8B3" />
@@ -436,7 +431,7 @@ const AyahPlayer = props => {
     return (
       <View style={styles.modalFooterContainer}>
         <View style={styles.resultContainer}>
-          {
+          {/* {
             percentAccuracy.current ? 
             <View style={styles.accuracyContainer}>
             <Text style={percentAccuracy.current > 90 ? styles.accuracyTextGreen : styles.accuracyTextRed}>
@@ -455,12 +450,43 @@ const AyahPlayer = props => {
             <Text>
               {socketConnected
                 ? fetchingResponse
-                  ? 'Fetching Response'
-                  : 'Connecting!'
+                  ? 'Listening...'
+                  : 'Listening...'
                 : 'Tap on Mic to Recite'}
             </Text>
-          }
-        
+            
+          } */}
+          {socketConnected ? (
+            <Text>Listening...</Text>
+          ) : percentAccuracy.current ? (
+            <View style={styles.accuracyContainer}>
+              <Text
+                style={
+                  percentAccuracy.current > 90
+                    ? styles.accuracyTextGreen
+                    : styles.accuracyTextRed
+                }>
+                Accuracy : {percentAccuracy.current} %
+              </Text>
+              {percentAccuracy.current > 90 ? (
+                <Icon
+                  style={{ marginLeft: 8 }}
+                  name={'checkmark-circle-outline'}
+                  size={20}
+                  color="green"
+                />
+              ) : (
+                <Icon
+                  style={{ marginLeft: 8 }}
+                  name={'close-circle-outline'}
+                  size={20}
+                  color="red"
+                />
+              )}
+            </View>
+          ) : (
+            <Text>Tap on Mic to Recite</Text>
+          )}
         </View>
 
         <View style={styles.playRecordContainer}>
@@ -566,33 +592,31 @@ const AyahPlayer = props => {
           {selectedAyah ? selectedAyah.text : ''}
         </Text> */}
         {socketResponse.length !== 0 && responseRecieved ? (
-            <View style={styles.responseContainer}>
-              {socketResponse[socketResponse.length - 1].result ? (
-                <>
-                  <Text style={styles.descTextRight}>
-                    {/* {
+          <View style={styles.responseContainer}>
+            {socketResponse[socketResponse.length - 1].result ? (
+              <>
+                <Text style={styles.descTextRight}>
+                  {/* {
                       // print the last fetched response from response array
                       socketResponse[socketResponse.length - 1].result
                         .hypotheses[0].transcript
                     } */}
-                    {_renderDiffText(
-                      socketResponse[socketResponse.length - 1].result
-                        .hypotheses[0].transcript,
-                    )}
-                  </Text>
-                  <Text>
-                    
-                    {/* pass the last fetched response from response array into getPercentAccuracy() function */}
-                    
-                  </Text>
-                </>
-              ) : null}
-            </View>
-          ) : (
-            <Text style={styles.descTextRight}>
-          {selectedAyah ? selectedAyah.text : ''}
-        </Text>
-          )}
+                  {_renderDiffText(
+                    socketResponse[socketResponse.length - 1].result
+                      .hypotheses[0].transcript,
+                  )}
+                </Text>
+                <Text>
+                  {/* pass the last fetched response from response array into getPercentAccuracy() function */}
+                </Text>
+              </>
+            ) : null}
+          </View>
+        ) : (
+          <Text style={styles.descTextRight}>
+            {selectedAyah ? selectedAyah.text : ''}
+          </Text>
+        )}
       </View>
     </Modalize>
   );
@@ -758,29 +782,29 @@ const styles = StyleSheet.create({
     backgroundColor: Colors.white,
     justifyContent: 'center',
     alignItems: 'center',
-    fontSize:20
+    fontSize: 20,
   },
-  ayahNumber:{
-    position:'absolute',
+  ayahNumber: {
+    position: 'absolute',
     fontFamily: FontType.jameelNoriReg,
-    fontSize:16
+    fontSize: 16,
   },
   textNumber: {
     color: Colors.grey,
     fontSize: 22,
     fontFamily: FontType.semiBold,
   },
-  accuracyContainer:{
-    flexDirection:'row',
-    justifyContent:'space-between',
-    alignItems:'center'
+  accuracyContainer: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
   },
-  accuracyTextGreen:{
-    color:'green',
-    fontSize:16
+  accuracyTextGreen: {
+    color: 'green',
+    fontSize: 16,
   },
-  accuracyTextRed:{
-    color:'red',
-    fontSize:16
-  }
+  accuracyTextRed: {
+    color: 'red',
+    fontSize: 16,
+  },
 });
