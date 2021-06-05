@@ -1,5 +1,5 @@
 /* eslint-disable react-hooks/exhaustive-deps */
-import React, { useState, useEffect, useRef, Fragment } from 'react';
+import React, { useState, useEffect, useRef, Fragment,useCallback } from 'react';
 import {
   View,
   Text,
@@ -131,16 +131,21 @@ function QuranDetail(props) {
   const renderDetailSurah = async () => {
     const surahId = get(navigation, 'state.params.dataSurah.number');
     const countAyat = get(navigation, 'state.params.dataSurah.numberOfAyahs');
-
+    console.log('surahId :', surahId , 'surahId type : ', typeof surahId ,'countAyat : ', countAyat);
     const payload = {
       surahId,
       countAyat,
     };
 
     // get quran data with text, audio and translation from redux
-    await getQuranTextAudioTranslationDefault(payload);
+    // await getQuranTextAudioTranslationDefault(payload);
+    getQuranData(payload)
     // await getDetailQuran(payload);
   };
+
+  const getQuranData = useCallback(async (payload) => {
+    await getQuranTextAudioTranslationDefault(payload);
+  }, [getQuranTextAudioTranslationDefault]);
 
   const openBottomSheet = () => {
     // console.log(item);
@@ -307,7 +312,9 @@ function QuranDetail(props) {
   };
 
   console.log('selectedTranslation : ', selectedTranslation);
-
+  console.log('isLoading : ', isLoading);
+  console.log('arabicData : ', arabicData , 'arabicData.length: ', Object.keys(arabicData).length);
+  console.log('translationData : ', translationData, ' translationData.length : ', Object.keys(translationData).length);
   return isLoading ? (
     <Loading />
   ) : (

@@ -13,10 +13,7 @@ import {
   quranUrduTranslationEndpoint,
 } from '../../../Utils/EndPoints';
 import { Constants } from '../../../Utils/Constants';
-import { surahs } from '../../../Assets/surah';
-import { getSurah } from '../../../Data';
 
-import Reactotron from 'reactotron-react-native';
 
 const getDetailQuran = payload => async dispatch => {
   // dispatch empty action to start the api call and make loading and refreshing true
@@ -25,21 +22,7 @@ const getDetailQuran = payload => async dispatch => {
   // destructure payload parameters
   const { surahId, countAyat } = payload;
 
-  // console.log('surahId : ', surahId);
-  // console.log('endpoint : ', quranArabicEndpoint(surahId));
-  // dispatch({ type: REQ_QURAN_DETAIL });
-  // console.log('surahId',surahId,'type',typeof surahId,'countAyat',countAyat);
-  // //const response = require('./quranDetails.json')
-  // const response = getSurah(surahId)
-  // //const response = surahs[surahId] ? surahs[surahId] : surahs[1]
-  // //Reactotron.log(response)
-  // Reactotron.log('response in actions',response)
-  // //console.log('getSurah',getSurah(surahId));
-  //   dispatch({
-  //     type: REQ_QURAN_DETAIL_SUCCESS,
-  //     //payload: response.data,
-  //     payload: response,
-  //   });
+ 
   try {
     const response = await axios.get(quranArabicEndpoint(surahId));
     console.log('surah data response : ', response);
@@ -68,11 +51,13 @@ const getQuranTextAudioTranslationDefault = payload => async dispatch => {
 
   // destructure payload parameters
   const { surahId, countAyat } = payload;
+  console.log('Inside action surahId :', surahId , 'countAyat : ', countAyat);
+  console.log('getQuranTextAudioTranslationDefault endpoint: ', quranArabicAudioTranslationEndpoint(surahId) );
   try {
-    const response = await axios.get(
-      quranArabicAudioTranslationEndpoint(surahId),
-    );
-    console.log('getQuranTextAudioTranslationDefault response : ', response);
+    console.log('api call started!')
+    const response = await axios.get(quranArabicAudioTranslationEndpoint(surahId))
+    console.log('api call end!');
+    console.log('getQuranTextAudioTranslationDefault response : ', response.data);
     if (response?.status === Constants.RESPONSE_CODE.SUCCESS) {
       dispatch({
         type: REQ_QURAN_DETAIL_SUCCESS,
@@ -85,11 +70,14 @@ const getQuranTextAudioTranslationDefault = payload => async dispatch => {
       });
     }
   } catch (error) {
+    console.log('api call error!');
     dispatch({
       type: REQ_QURAN_DETAIL_FAILURE,
       error: 'Error while fetching data',
     });
   }
+
+
 };
 
 // request quran translations based on selection
@@ -100,12 +88,11 @@ const getQuranTranslationSelected = payload => async dispatch => {
   // destructure payload parameters
   const { surahId, translationKey } = payload;
   console.log('surahId, translationKey : ', surahId, translationKey)
+  console.log('quranUrduTranslationEndpoint endpoint: ', quranUrduTranslationEndpoint(surahId, translationKey) );
   try {
-    const response = await axios.get(
-      quranUrduTranslationEndpoint(surahId, translationKey),
-    );
+    const response = await axios.get(quranUrduTranslationEndpoint(surahId, translationKey))
     console.log('quranUrduTranslationEndpoint response : ', response);
-    if (response?.status === Constants.RESPONSE_CODE.SUCCESS) {
+    if (response.status === Constants.RESPONSE_CODE.SUCCESS) {
       dispatch({
         type: REQ_QURAN_TRANSLATION_SUCCESS,
         payload: response?.data?.data,

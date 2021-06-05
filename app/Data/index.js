@@ -1,3 +1,4 @@
+/* 
 const response = require('./quran.json')
 const getSurah = (surahId) =>{
     if(typeof surahId == 'number'){
@@ -8,7 +9,9 @@ const getSurah = (surahId) =>{
     }
     
 }
+*/
+
 
 const surahList = require('./surahList.json')
 
-export { getSurah , surahList }
+export { surahList }

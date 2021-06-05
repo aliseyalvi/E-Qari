@@ -1,10 +1,10 @@
 const Strings = {
   ayat: 'ayat',
-  appTitle: 'Al-Quran Mobile',
-  settings: 'Pengaturan Aplikasi',
-  about: 'Tentang Aplikasi',
-  generalSettings: 'Pengaturan Umum',
-  otherSetting: 'Pengaturan Lainnya',
+  appTitle: 'E-Qari',
+  settings: 'Settings',
+  about: 'About',
+  generalSettings: 'General Settings',
+  otherSetting: 'Other Settings',
 };
 
 export { Strings };

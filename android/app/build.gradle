@@ -187,20 +187,20 @@ android {
             proguardFiles getDefaultProguardFile("proguard-android.txt"), "proguard-rules.pro"
         }
     }
-    productFlavors {
-        dev {
-            minSdkVersion rootProject.ext.minSdkVersion
-            applicationId 'com.sadaqat.eqari.mobile.app.dev'
-            targetSdkVersion rootProject.ext.targetSdkVersion
-            resValue "string", "build_config_package", "com.myapp"
-        }
-        beta {
-            minSdkVersion rootProject.ext.minSdkVersion
-            applicationId 'com.sadaqat.eqari.mobile.beta'
-            targetSdkVersion rootProject.ext.targetSdkVersion
-            resValue "string", "build_config_package", "com.myapp"
-        }
-    }
+    // productFlavors {
+    //     dev {
+    //         minSdkVersion rootProject.ext.minSdkVersion
+    //         applicationId 'com.sadaqat.eqari.mobile.app.dev'
+    //         targetSdkVersion rootProject.ext.targetSdkVersion
+    //         resValue "string", "build_config_package", "com.myapp"
+    //     }
+    //     beta {
+    //         minSdkVersion rootProject.ext.minSdkVersion
+    //         applicationId 'com.sadaqat.eqari.mobile.beta'
+    //         targetSdkVersion rootProject.ext.targetSdkVersion
+    //         resValue "string", "build_config_package", "com.myapp"
+    //     }
+    // }
     // applicationVariants are e.g. debug, release
     applicationVariants.all { variant ->
         variant.outputs.each { output ->
@@ -222,7 +222,8 @@ dependencies {
     implementation "com.facebook.react:react-native:+"  // From node_modules
     implementation 'androidx.appcompat:appcompat:1.1.0-rc01'
     implementation 'androidx.swiperefreshlayout:swiperefreshlayout:1.1.0-alpha02'
-
+    implementation project(':react-native-fs')
+    implementation project(':lottie-react-native')
     if (enableHermes) {
         def hermesPath = "../../node_modules/hermes-engine/android/";
         debugImplementation files(hermesPath + "hermes-debug.aar")

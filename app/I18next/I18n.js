@@ -3,14 +3,14 @@ import { initReactI18next } from 'react-i18next';
 import moment from 'moment/min/moment-with-locales';
 
 const enDictionary = require('./locales/en-EN.json');
-const idDictionary = require('./locales/id-ID.json');
+const urDictionary = require('./locales/ur-UR.json');
 
 const Translation = {
   en: {
     translation: enDictionary,
   },
-  id: {
-    translation: idDictionary,
+  ur: {
+    translation: urDictionary,
   },
 };
 
@@ -18,8 +18,8 @@ I18n.use(initReactI18next);
 
 I18n.init({
   resources: Translation,
-  fallbackLng: ['en', 'id'],
-  lng: 'id',
+  fallbackLng: ['en', 'ur'],
+  lng: 'ur',
 });
 
 I18n.on('languageChanged', lng => {
