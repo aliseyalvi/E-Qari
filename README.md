@@ -22,7 +22,9 @@ If using Yarn
 ```bash
 yarn install
 ```
-## Usage
+## Screenshots
+<img src="/Screenshots/1.jpeg" width="250"> | 
+<img src="/Screenshots/2.jpeg" width="250"> |
 
 
 ## Contributing
