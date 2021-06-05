@@ -56,3 +56,4 @@ yarn.lock
 *.lnk
 *.hprof
 yarn.lock
+*.apk
